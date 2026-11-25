@@ -114,7 +114,8 @@ button{cursor:pointer}
 .banner.good{background:#E3F4D6}
 .banner .msg{flex:1}
 @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
-.ctrls{display:flex;gap:10px;align-items:center}
+.ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#stepBtn.on{background:#E2F1FB}
 #runBtn{font-size:20px;padding:8px 20px;display:flex;align-items:center;gap:8px}
 .speed{display:flex;border:2.5px solid var(--ink);border-radius:11px;overflow:hidden;margin-left:auto}
 .speed button{border:none;background:#fff;padding:6px 10px;font-size:18px}
@@ -197,6 +198,44 @@ button{cursor:pointer}
 .cells i.s1{background:#F7D88A}.cells i.s2{background:#F2B33D}.cells i.s3{background:#D9822B}
 .legend{font-size:14px;color:var(--ink2);display:flex;gap:12px;align-items:center;margin:8px 0}
 .legend i{width:12px;height:14px;display:inline-block;border-radius:2px;vertical-align:middle;margin-right:3px}
+.cells i.bn{border-radius:50%;width:13px;margin-left:2px;outline:1.5px dashed #C9A23A}
+.cells i.stuck{outline:2.5px solid #D93B3B}
+td.stuck{background:#FDE3DC !important;color:#B02A2A;font-weight:bold}
+.rtabs{display:flex;gap:8px;justify-content:center;margin:6px 0}
+.rtabs button{border:2px solid #5A4632;border-radius:10px;padding:6px 14px;background:#fff;font:inherit;font-weight:bold;cursor:pointer}
+.rtabs button.on{background:#FFD66B}
+
+/* 新手引導的小手 */
+#hand{position:fixed;z-index:45;pointer-events:none;font-size:40px;display:none;filter:drop-shadow(2px 3px 2px rgba(0,0,0,.3))}
+#hand.on{display:block;animation:handmove 2.6s ease-in-out infinite}
+@keyframes handmove{0%{transform:translate(var(--x0),var(--y0));opacity:0}12%{opacity:1}20%{transform:translate(var(--x0),var(--y0)) scale(.85)}70%{transform:translate(var(--x1),var(--y1)) scale(.85);opacity:1}85%{transform:translate(var(--x1),var(--y1));opacity:0}100%{transform:translate(var(--x1),var(--y1));opacity:0}}
+
+/* ===== 小螢幕（平板、小筆電） ===== */
+.topbar{flex-wrap:wrap}
+@media (max-width:1250px){
+  #palette{width:215px}
+  .side{width:430px}
+  #runBtn{font-size:18px;padding:7px 14px}
+}
+@media (max-width:1100px){
+  #palette{width:190px;padding:6px 6px 40px}
+  .side{width:360px;padding:8px 10px;gap:7px}
+  .blk{font-size:15px;padding:5px 10px}
+  .case p{font-size:15px}
+  #tip{font-size:15px}
+  #counter{font-size:14px}
+  .topbar h1{font-size:17px}
+  .chip{font-size:13px;padding:2px 8px}
+}
+@media (max-width:900px){
+  .gmain{display:grid;grid-template-columns:180px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+  #palette{grid-column:1;grid-row:2}
+  #wsBox{grid-column:2;grid-row:2;min-height:0}
+  .side{grid-column:1 / 3;grid-row:1;width:auto;border-left:none;border-bottom:3px solid var(--ink);display:grid;grid-template-columns:minmax(0,1fr) 300px;align-content:start;overflow:visible}
+  .side .stagewrap{grid-column:2;grid-row:1 / span 3}
+  .side .case,.side .ctrls,.side #keypad{grid-column:1}
+  .side .case p{font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -250,6 +289,7 @@ button{cursor:pointer}
 <section class="screen" id="teacher">
   <div class="topbar">
     <h1>👩‍🏫 教師模式</h1><div class="sp"></div>
+    <button class="btn small green" id="tDemo" title="全部關卡解鎖，上課用投影機示範；進度不會存到學生成績">🎮 示範模式（全部解鎖）</button>
     <button class="btn small" id="tExpCls">📥 匯出本班</button>
     <button class="btn small" id="tExpAll">📥 匯出全部班級</button>
     <button class="btn small" id="tOut">登出</button>
@@ -292,6 +332,7 @@ button{cursor:pointer}
     <button class="btn small" id="mNote">📓 筆記本</button>
     <button class="btn small" id="mStory">📖 故事</button>
     <button class="btn small" id="mHome">🏠 首頁</button>
+    <button class="btn small" id="mOut">🚪 登出</button>
   </div>
   <div class="tabs" id="mTabs"></div>
   <div id="mapArt"></div>
@@ -320,6 +361,7 @@ button{cursor:pointer}
       <div class="stagewrap"><svg id="stage" viewBox="0 0 480 360"></svg><div id="banner"></div></div>
       <div class="ctrls">
         <button class="btn green" id="runBtn"></button>
+        <button class="btn small" id="stepBtn" title="每按一次，只執行一塊積木">👣 單步</button>
         <button class="btn small" id="stopBtn">⏹ 停止</button>
         <button class="btn small" id="rstBtn">↺ 回起點</button>
         <div class="speed" id="speed">
@@ -335,6 +377,7 @@ button{cursor:pointer}
 
 <div id="modal"><div class="dlg" id="dlg"></div></div>
 <div id="ind"></div>
+<div id="hand">👆</div>
 
 <script>
 "use strict";
@@ -378,7 +421,7 @@ const BLOCKS = {
   drop:   {cat:'motion', label:['放下 👇']},
   say:    {cat:'looks', label:['說', {text:'t', def:'你好'}]},
   sayVar: {cat:'looks', label:['說出', {sel:'v', opts:'vars'}, '的數字']},
-  repeat: {cat:'control', c:true, label:['重複', {num:'n', def:3, min:1, max:30}, '次']},
+  repeat: {cat:'control', c:true, label:['重複', {num:'n', def:3, min:1, max:60}, '次']},
   forever:{cat:'control', c:true, cap:true, label:['不停重複']},
   until:  {cat:'control', c:true, label:['重複直到', {slot:'c'}]},
   if:     {cat:'control', c:true, label:['如果', {slot:'c'}, '那麼']},
@@ -484,10 +527,10 @@ const LEVELS = [
  { id:'1-3', name:'繞過大水窪',
    story:'前面有一大片水窪，汪汪不想弄濕腳，要繞過去才行。',
    tip:'可以從上面繞，也可以從下面繞。<b>金骨頭</b>藏在其中一條路上喔！',
-   map:['##..##..','........','...~~~..','...~~~.G','...~~~..','........'],
-   start:{x:1,y:3,dir:0}, bone:{x:4,y:5}, win:{reach:true}, target:14, blocks:B1,
-   hint1:'先走 1 格到水窪旁邊，再決定往上還是往下繞。金骨頭在下面！',
-   hint2:'移動1 → 向右轉 → 移動×2 → 向左轉 → 移動×4 → 向左轉 → 移動×2 → 向右轉 → 移動1',
+   map:['##..##..','........','...~~~..','...~~~G.','...~~~..','........'],
+   start:{x:2,y:3,dir:0}, bone:{x:4,y:5}, win:{reach:true}, target:11, blocks:B1,
+   hint1:'汪汪就在水窪旁邊，可以往上繞，也可以往下繞。金骨頭在下面！',
+   hint2:'向右轉 → 移動×2 → 向左轉 → 移動×4 → 向左轉 → 移動×2',
    clue:{icon:'wetpaw', name:'濕濕的腳印', desc:'水窪邊的腳印還是濕的，喵影剛剛才經過！'} },
  { id:'1-4', name:'長長的步道',
    story:'公園的步道又長又彎，一格一格走太慢了！試試新積木「移動 (N) 格」。',
@@ -976,8 +1019,61 @@ const LEVELS = [
    hint1:'汪汪分兩段：先撿寶石到 3 顆再廣播；收到「門開了」以後，遇到障礙就右轉，直到到達再撿起徽章。',
    hint2:'汪汪：🚩→重複直到〈寶石=3〉{移動1→如果〈腳下有東西？〉{撿起→寶石改變1}}→廣播 開門；收到 門開了→重複直到〈到達？〉{如果〈前方有障礙？〉{右轉}→移動1}→撿起。啾啾：收到 開門→移動3→廣播 門開了',
    clue:{icon:'badge', name:'偵探徽章', desc:'汪汪終於拿回了最寶貝的偵探徽章！'} },
+
+ /* ---------------- ⭐ 加分案件（破完關主後開放，給先做完的同學挑戰） ---------------- */
+ { id:'1-B', name:'蛇形小路', bonus:true,
+   story:'⭐ 加分案件！公園後面有一條彎彎曲曲的小路。用最少的積木帶汪汪走到 🚩！',
+   tip:'每一段直線只用<b>一塊</b>「移動 (N) 格」，轉彎時注意紅色箭頭的方向。',
+   map:['.......#','######.#','#......#','#.######','#......G','########'],
+   start:{x:0,y:0,dir:0}, bone:{x:3,y:2}, win:{reach:true}, target:9, blocks:B1N,
+   hint1:'一共有 5 段直線、4 個轉彎。', hint2:'移動 6 格 → 右轉 → 移動 2 格 → 右轉 → 移動 5 格 → 左轉 → 移動 2 格 → 左轉 → 移動 6 格',
+   clue:{icon:'paw', name:'彎彎的腳印', desc:'小路上的貓腳印也是彎彎曲曲的。'} },
+ { id:'2-B', name:'兩條巷子', bonus:true,
+   story:'⭐ 加分案件！兩條巷子都掉滿了小魚乾。上面的巷子往右撿，下面的巷子往左撿，只能用 8 塊積木！',
+   tip:'「走一條巷子＋轉到下一條」這整件事做了 2 次，所以外面再包一個重複。',
+   map:['********','........','#*#*#*.*','........','#*#*#*#*','~~~~~~~~'],
+   start:{x:0,y:1,dir:0}, bone:{x:6,y:2},
+   items:[[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3]].map(([x,y],k) => ({id:'f'+k, kind:'fish', x, y})),
+   win:{allItems:true}, target:8, blocks:['flag','move1','right','left','repeat','pick'],
+   hint1:'一條巷子＝「移動1、撿起」做 6 次；然後右轉、走 2 格、再右轉，就到下一條巷子。',
+   hint2:'重複 2 次 { 重複 6 次 { 移動1 → 撿起 } → 向右轉 → 移動1 → 移動1 → 向右轉 }',
+   clue:{icon:'fish', name:'整整齊齊的魚乾', desc:'十二包小魚乾，一包都沒少！'} },
+ { id:'3-B', name:'沙灘大掃除', bonus:true,
+   story:'⭐ 加分案件！整片沙灘都要走過一遍，把貝殼撿乾淨。紅色地墊向右轉、藍色地墊向左轉！',
+   tip:'把「撿貝殼」和「看顏色轉彎」通通放進一個<b>很大的重複</b>裡，數數看一共要走幾步。',
+   map:['.......r','b......r','b......r','b......r','b......r','G......r'],
+   start:{x:0,y:0,dir:0}, bone:{x:4,y:2},
+   items:[[3,0],[5,1],[2,2],[6,3],[1,4],[4,5]].map(([x,y],k) => ({id:'s'+k, kind:'shell', x, y})),
+   win:{allItems:true, reach:true}, target:11,
+   blocks:['flag','move1','right','left','repeat','if','color','onItem','pick'],
+   hint1:'沙灘一共 48 格，汪汪要走 47 步。每一步：撿貝殼、看紅色、看藍色。',
+   hint2:'重複 47 次 { 移動1 → 如果〈腳下有東西？〉{ 撿起 } → 如果〈紅色？〉{ 向右轉 } → 如果〈藍色？〉{ 向左轉 } }',
+   clue:{icon:'shell', name:'乾淨的沙灘', desc:'海龜伯伯說：謝謝你把沙灘掃乾淨！'} },
+ { id:'4-B', name:'積分大賽', bonus:true,
+   story:'⭐ 加分案件！貓頭鷹出題：<b>藍莓一顆 2 分、松果一顆 1 分</b>。撿完以後告訴貓頭鷹一共幾分！',
+   tip:'「把 分數 改變 2」一次可以加 2 分。藍色地板是藍莓、黃色地板是松果。',
+   map:[FOREST_ROWS[0],FOREST_ROWS[1],'=ybbyyb.',FOREST_ROWS[2],FOREST_ROWS[3],'~~~~~~~~'],
+   start:{x:0,y:2,dir:0}, bone:{x:3,y:2}, vars:['分數'], varInit:{'分數':0},
+   items:[{id:'a1',kind:'acorn',x:1,y:2},{id:'e1',kind:'berry',x:2,y:2},{id:'e2',kind:'berry',x:3,y:2},{id:'a2',kind:'acorn',x:4,y:2},{id:'a3',kind:'acorn',x:5,y:2},{id:'e3',kind:'berry',x:6,y:2}],
+   npcs:[{id:'owl', kind:'owl', x:7, y:2, answer:'9', talk:'咕咕！9 分，完全正確！', wrong:'咕？分數不對喔，藍莓 2 分、松果 1 分！'}],
+   win:{talk:'owl'}, target:11,
+   blocks:['flag','move1','repeat','if','color','pick','chgVar','sayVar'],
+   hint1:'藍色：撿起、分數加 2；黃色：撿起、分數加 1。走完 6 格再說出分數。',
+   hint2:'重複 6 次 { 移動1 → 如果〈藍色？〉{ 撿起 → 分數 改變 2 } → 如果〈黃色？〉{ 撿起 → 分數 改變 1 } } → 說出 分數 的數字',
+   clue:{icon:'talk', name:'貓頭鷹的獎狀', desc:'貓頭鷹頒給汪汪一張「算數小天才」獎狀。'} },
+ { id:'5-B', name:'寶石雙人組', bonus:true, actors:true,
+   story:'⭐ 加分案件！寶石分在兩條走廊，汪汪和啾啾<b>一起撿</b>，變數「寶石」要數到 6。啾啾最後要站在開關上，汪汪才過得了門！',
+   tip:'汪汪撿完自己的寶石後，可以用「重複直到〈寶石 = 6〉」<b>等</b>啾啾撿完。',
+   map:['########','########','=====X=G','########','########','.......K'],
+   start:{x:0,y:2,dir:0}, start2:{x:0,y:5,dir:0}, bone:{x:6,y:2}, vars:['寶石'], varInit:{'寶石':0},
+   items:[{id:'g1',kind:'gem',x:1,y:2},{id:'g2',kind:'gem',x:2,y:2},{id:'g3',kind:'gem',x:3,y:2},{id:'g4',kind:'gem',x:2,y:5},{id:'g5',kind:'gem',x:4,y:5},{id:'g6',kind:'gem',x:7,y:5}],
+   win:{reach:true, varEq:{v:'寶石', n:6}}, target:15,
+   blocks:['flag','move1','moveN','repeat','until','if','onItem','pick','chgVar','cmp'],
+   hint1:'兩個角色都用「重複＋如果腳下有東西就撿起、寶石加 1」。汪汪撿完再等寶石 = 6，然後往前走。',
+   hint2:'啾啾：🚩 → 重複 7 次 { 移動1 → 如果〈腳下有東西？〉{ 撿起 → 寶石 改變 1 } }。汪汪：🚩 → 重複 4 次 { 同上 } → 重複直到〈寶石 = 6〉{ } → 移動 3 格',
+   clue:{icon:'gem', name:'六顆寶石', desc:'六顆寶石排成一個愛心，送給汪汪的家人。'} },
 ];
-LEVELS.forEach(L => { L.scene = +L.id.split('-')[0]; L.no = +L.id.split('-')[1]; });
+LEVELS.forEach(L => { L.scene = +L.id.split('-')[0]; L.no = L.bonus ? 11 : +L.id.split('-')[1]; });
 const sceneOf = L => SCENES[L.scene - 1];
 function geo(L, vi){
   const v = L.variants ? L.variants[vi || 0] : L;
@@ -992,12 +1088,12 @@ function geo(L, vi){
    存檔與帳號
    ========================================================= */
 let ACC = null; // {cls, seat, pw, name, open, cloud:true} 或 {guest:true}
-function saveKey(){ return SAVE_PREFIX + (ACC && !ACC.guest ? ACC.cls + '-' + ACC.seat : 'guest'); }
+function saveKey(){ return SAVE_PREFIX + (ACC && ACC.demo ? 'demo' : ACC && !ACC.guest ? ACC.cls + '-' + ACC.seat : 'guest'); }
 function loadSave(){
   let s = null;
   try { s = JSON.parse(localStorage.getItem(saveKey())); } catch(e) {}
   s = s || {};
-  s.progress = s.progress || {}; s.scripts = s.scripts || {}; s.seen = s.seen || {}; s.pending = s.pending || [];
+  s.progress = s.progress || {}; s.scripts = s.scripts || {}; s.seen = s.seen || {}; s.pending = s.pending || []; s.fails = s.fails || {};
   if (!s.speed) s.speed = 'mid';
   if (s.sound === undefined) s.sound = true;
   return s;
@@ -1016,15 +1112,20 @@ function rankName(n){
   return '🐾 見習偵探';
 }
 function sceneLock(n){
+  if (ACC && ACC.demo) return '';
   if (n > 1 && !S.save.progress[(n-1) + '-10']) return `要先破完情境${n-1}「${SCENES[n-2].name}」的關主案件喔！`;
   if (ACC && ACC.cloud && n > (ACC.open || 1)) return '老師還沒有開放這個情境，請等老師開放。';
   return '';
 }
 function levelOpen(i){
   const L = LEVELS[i];
+  if (ACC && ACC.demo) return true;
   if (sceneLock(L.scene)) return false;
+  if (L.bonus) return !!S.save.progress[L.scene + '-10'];
   return L.no === 1 || !!S.save.progress[LEVELS[i-1].id];
 }
+const MAIN = () => LEVELS.filter(L => !L.bonus);
+const MAX_STARS = () => LEVELS.length * 3;
 
 /* ---------- 雲端 ---------- */
 async function api(body){
@@ -1202,6 +1303,11 @@ function crabArt(){
    <path d="M-4 3 q4 3 8 0" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>
   </g>`;
 }
+function starPath(cx,cy,R,r){
+  let p = '';
+  for (let i=0;i<10;i++){ const a = -Math.PI/2 + i*Math.PI/5, rr = i%2 ? r : R; p += (i?'L':'M') + (cx+Math.cos(a)*rr).toFixed(1) + ' ' + (cy+Math.sin(a)*rr).toFixed(1); }
+  return p + 'Z';
+}
 function starShape(cx,cy,R,r,fill,stroke){
   let p = '';
   for (let i=0;i<10;i++){
@@ -1349,7 +1455,9 @@ const TILE_COLOR = {r:['#F28B82','#C9564C'], b:['#7FB3F5','#3E78C9'], y:['#FFE08
 function colorTileArt(x,y,c){
   const [f, s] = TILE_COLOR[c];
   return `<rect x="${x*T+4}" y="${y*T+4}" width="52" height="52" rx="10" fill="${f}" stroke="${s}" stroke-width="3"/>
-    <rect x="${x*T+12}" y="${y*T+12}" width="36" height="36" rx="7" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/>`;
+    <rect x="${x*T+12}" y="${y*T+12}" width="36" height="36" rx="7" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/>
+    ${c === 'y' ? `<circle cx="${x*T+14}" cy="${y*T+14}" r="5" fill="#fff" stroke="${s}" stroke-width="2"/>`
+      : `<text x="${x*T+15}" y="${y*T+21}" text-anchor="middle" font-size="17" font-weight="900" fill="#fff" stroke="${s}" stroke-width="3" paint-order="stroke">${c === 'r' ? '↻' : '↺'}</text>`}`;
 }
 const PAIR_COLOR = {X:'#F5B935', K:'#F5B935', Y:'#9B6FD6', J:'#9B6FD6'};
 function buttonArt(x,y,ch,pressed){
@@ -1671,10 +1779,13 @@ function mark(id, cls, on){ const e = blockEls(id); if (e) e.classList.toggle(cl
 function clearMarks(){ document.querySelectorAll('#wsInner .blk.running, #wsInner .blk.err').forEach(e => e.classList.remove('running','err')); }
 
 async function execList(list, ctx){ for (const b of list) await execBlock(b, ctx); }
+const loopMark = () => ({a:S.st.anim, t:performance.now()});
 async function loopTick(ctx, before){
   // 迴圈裡如果什麼動畫都沒有，就讓畫面喘口氣，避免當機
-  if (S.st.anim === before){ S.st.idle++; await new Promise(r => requestAnimationFrame(r)); chk(ctx.tok);
+  if (S.st.anim === before.a){ if (!S.stepMode) S.st.idle++; await new Promise(r => requestAnimationFrame(r)); chk(ctx.tok);
     if (S.st.idle > 600) throw new Fail('程式卡住了！迴圈裡好像沒有讓角色動起來的積木。'); }
+  // 別的角色在動、但這一圈自己沒等待（例如空的「重複直到」在等別人）：也要讓出一格畫面
+  else if (performance.now() - before.t < 2){ await new Promise(r => requestAnimationFrame(r)); chk(ctx.tok); }
 }
 async function execBlock(b, ctx){
   chk(ctx.tok);
@@ -1683,6 +1794,7 @@ async function execBlock(b, ctx){
   mark(b.id, 'running', true);
   const a = ctx.a;
   try {
+    if (S.stepMode){ await stepWait(); chk(ctx.tok); }
     switch (b.type){
       case 'move1': await stepActor(ctx, b); break;
       case 'moveN': for (let i=0;i<b.args.n;i++) await stepActor(ctx, b); break;
@@ -1693,9 +1805,9 @@ async function execBlock(b, ctx){
       case 'sayVar': await doSay(ctx, String(S.st.vars[b.args.v] ?? 0)); break;
       case 'pick':  await doPick(ctx, b); break;
       case 'drop':  await doDrop(ctx, b); break;
-      case 'repeat': for (let i=0;i<b.args.n;i++){ const s0 = S.st.anim; await execList(b.body, ctx); await loopTick(ctx, s0); } break;
-      case 'forever': for (;;){ const s0 = S.st.anim; await execList(b.body, ctx); await loopTick(ctx, s0); if (++S.st.steps > 6000) throw new Fail('程式跑太久了！', b.id); } break;
-      case 'until': while (!evalBool(b.slots.c, a)){ const s0 = S.st.anim; await execList(b.body, ctx); await loopTick(ctx, s0); if (++S.st.steps > 6000) throw new Fail('程式跑太久了！', b.id); } break;
+      case 'repeat': for (let i=0;i<b.args.n;i++){ const s0 = loopMark(); await execList(b.body, ctx); await loopTick(ctx, s0); } break;
+      case 'forever': for (;;){ const s0 = loopMark(); await execList(b.body, ctx); await loopTick(ctx, s0); if (++S.st.steps > 6000) throw new Fail('程式跑太久了！', b.id); } break;
+      case 'until': while (!evalBool(b.slots.c, a)){ const s0 = loopMark(); await execList(b.body, ctx); await loopTick(ctx, s0); if (++S.st.steps > 6000) throw new Fail('程式跑太久了！', b.id); } break;
       case 'if': if (evalBool(b.slots.c, a)) await execList(b.body, ctx); break;
       case 'ifelse': await execList(evalBool(b.slots.c, a) ? b.body : b.body2, ctx); break;
       case 'setVar': S.st.vars[b.args.v] = +b.args.n; sfx('var'); renderHud(); await wait(speed()*.25, ctx.tok); break;
@@ -1706,6 +1818,13 @@ async function execBlock(b, ctx){
   } finally { mark(b.id, 'running', false); }
   if (checkWin()) throw WIN;
 }
+
+/* ---------- 單步執行：每按一次「下一步」只做一塊積木 ---------- */
+let STEPQ = [], stepCredit = 0;
+function stepWait(){ if (stepCredit){ stepCredit = 0; return Promise.resolve(); } return new Promise(res => STEPQ.push(res)); }
+function releaseStep(){ stepCredit = 0; const q = STEPQ; STEPQ = []; q.forEach(r => r()); }
+// 按「下一步」時汪汪還在走：記住這一下，走完就接著做下一塊
+function stepPress(){ if (STEPQ.length) releaseStep(); else stepCredit = 1; }
 
 /* ---------- 執行緒（多角色、廣播、按鍵） ---------- */
 let RUN = null;
@@ -1772,13 +1891,42 @@ function hasStarter(){
   return Object.values(S.sc).some(stacks => stacks.some(s => s.blocks[0] && s.blocks[0].type === (L.keys ? 'key' : 'flag')))
       || Object.values(S.sc).some(stacks => stacks.some(s => s.blocks[0] && s.blocks[0].type === 'flag'));
 }
-async function run(){
+const PREDICT = [['win','🚩 順利破案'],['bump','💥 撞到東西'],['out','🗺️ 走出地圖'],['stop','🤔 跑完了，但沒有破案']];
+function askPredict(){
+  return new Promise(res => {
+    openDlg(`<h2>🔮 先猜猜看！</h2><p>這段程式執行以後，你猜汪汪會怎麼樣？</p>
+      <div class="row">${PREDICT.map(([k,t]) => `<button class="btn" data-p="${k}">${t}</button>`).join('')}</div>
+      <div class="row"><button class="link" id="pSkip">不猜了，直接執行</button></div>`);
+    $('dlg').querySelectorAll('[data-p]').forEach(b => b.onclick = () => { closeDlg(); res(b.dataset.p); });
+    $('pSkip').onclick = () => { closeDlg(); res('skip'); };
+  });
+}
+function resultKind(res){
+  if (res === WIN) return 'win';
+  if (res instanceof Fail) return /地圖/.test(res.msg) ? 'out' : 'bump';
+  return 'stop';
+}
+function recordFail(L){
+  if (!S.save || (ACC && ACC.demo)) return;
+  S.save.fails[L.id] = (S.save.fails[L.id] || 0) + 1; writeSave();
+  if (ACC && ACC.cloud && !S.save.progress[L.id]){
+    S.save.pending = S.save.pending.filter(r => !(r.t === 'att' && r.lv === L.id));
+    S.save.pending.push({t:'att', lv:L.id, fails:S.save.fails[L.id], hint:S.hintUsed ? 1 : 0}); writeSave();
+    clearTimeout(attTimer); attTimer = setTimeout(flushCloud, 15000);
+  }
+}
+let attTimer = null;
+async function run(step){
   if (S.running) return;
   const L = curL();
   resetStage(0);
   if (!hasStarter()){ banner('info', L.keys ? '要先做一個<b>「當按下 ○○ 鍵」</b>，下面接積木喔！' : '要把積木接在<b>「當🚩被點擊」</b>下面才會執行喔！'); return; }
   if (countAll() === 0){ banner('info', '事件積木下面還沒有積木喔！把積木拖過去黏起來。'); return; }
+  let guess = null;
+  if (/-9$/.test(L.id) && !S.predicted && !S.noPredict){ S.predicted = true; guess = await askPredict(); if (guess === 'skip') guess = null; }
+  S.stepMode = !!step && !L.keys; STEPQ = []; stepCredit = 0;
   S.running = true; setRunUI(true); S.gotBoneAny = false;
+  if (S.stepMode) banner('info', '👣 單步模式：按「👣 下一步」，汪汪就做下一塊積木（發亮的那塊）。');
   if (L.keys){ banner('info', '🎮 用鍵盤方向鍵或下面的按鈕操控汪汪！'); setTimeout(() => { if (S.running) hideBanner(); }, 2200); }
   const nv = L.variants ? L.variants.length : 1;
   let res = null;
@@ -1795,15 +1943,20 @@ async function run(){
     }
   }
   S.token++;
-  S.running = false; setRunUI(false); clearMarks();
+  S.running = false; S.stepMode = false; releaseStep(); setRunUI(false); clearMarks();
   const tag = nv > 1 ? `（地圖 ${S.vi+1}）` : '';
-  if (res === WIN){ hideBanner(); onWin(); }
+  let pg = '';
+  if (guess && res !== STOP){
+    const k = resultKind(res), t = PREDICT.find(p => p[0] === guess)[1];
+    pg = k === guess ? `<br><small>🔮 你猜「${t}」——猜對了！</small>` : `<br><small>🔮 你猜「${t}」，結果是「${PREDICT.find(p => p[0] === k)[1]}」。</small>`;
+  }
+  if (res === WIN){ hideBanner(); S.predictMsg = pg.replace(/<\/?small>|<br>/g, ''); onWin(); }
   else if (res instanceof Fail){
-    sfx('fail'); setDogFace({});
+    sfx('fail'); setDogFace({}); recordFail(L);
     if (res.id) showErrBlock(res.id);
-    banner('fail', '😵 ' + res.msg + tag + (res.id ? '<br><small>出錯的積木已經用紅色標出來了。</small>' : ''), true);
+    banner('fail', '😵 ' + res.msg + tag + (res.id ? '<br><small>出錯的積木已經用紅色標出來了。</small>' : '') + pg, true);
   } else if (res === STOP){ hideBanner(); }
-  else { sfx('fail'); banner('info', '🐶 程式跑完了…… ' + unmetMsg() + tag, true); }
+  else { sfx('fail'); recordFail(L); banner('info', '🐶 程式跑完了…… ' + unmetMsg() + tag + pg, true); }
 }
 function showErrBlock(id){
   for (const [aid, stacks] of Object.entries(S.sc)){
@@ -1811,10 +1964,15 @@ function showErrBlock(id){
   }
   mark(id, 'err', true);
 }
-function stopRun(){ if (S.running){ S.token++; endRun(STOP); } }
+function stopRun(){ if (S.running){ S.token++; endRun(STOP); releaseStep(); } }
 function setRunUI(on){
   $('runBtn').disabled = on; $('ws').classList.toggle('locked', on);
   $('palette').style.pointerEvents = on ? 'none' : '';
+  const sb = $('stepBtn');
+  sb.disabled = on && !S.stepMode;
+  sb.textContent = on && S.stepMode ? '👣 下一步' : '👣 單步';
+  sb.classList.toggle('on', on && S.stepMode);
+  updateHand();
 }
 function banner(type, html, retry){
   $('banner').innerHTML = `<div class="banner ${type}"><span class="msg">${html}</span>${retry ? '<button class="btn small" id="bnRetry">↺ 再試一次</button>' : ''}</div>`;
@@ -1865,17 +2023,20 @@ function showWinDlg(stars, used, first){
   if (!S.gotBoneAny && !S.st.gotBone) notes.push('⭐⭐⭐ 再撿到<b>金骨頭</b>，可以拿到第 3 顆星');
   if (S.hintUsed && stars < 3) notes.push('⭐⭐⭐ 不看提示，才拿得到第 3 顆星');
   const best = S.save.progress[L.id].stars;
-  const isBoss = L.no === 10;
+  const isBoss = L.no === 10, pm = S.predictMsg; S.predictMsg = '';
+  const bonusNew = isBoss && first && !(ACC && ACC.demo);
   openDlg(`<h2>🎉 破案了！</h2>
     <div class="bigstars">${[0,1,2].map(i => `<span class="${i<stars?'':'off'}" style="animation-delay:${.15+i*.25}s">⭐</span>`).join('')}</div>
     <p>案件 ${L.id}「${L.name}」　用了 ${used} 塊積木${best > stars ? `　（最佳紀錄 ${best} 星）` : ''}</p>
+    ${pm ? `<p>${pm}</p>` : ''}
+    ${bonusNew ? '<p style="color:var(--coral-d)"><b>⭐ 地圖上開放了一個「加分案件」，有空可以挑戰！</b></p>' : ''}
     ${notes.length ? `<div class="notes">${notes.join('<br>')}</div>` : '<p><b>完美破案！你是名偵探！</b></p>'}
     <div class="cluebox">${clueIcon(L.clue.icon, 64)}<div><b>${first ? '🔍 獲得新線索！' : '🔍 線索'}「${L.clue.name}」</b><br>${L.clue.desc}</div></div>
     <div class="row"><button class="btn" id="wAgain">↺ 再挑戰</button><button class="btn" id="wMap">🗺️ 地圖</button>
-    <button class="btn main" id="wNext">${isBoss ? '看故事 ▶' : '下一案 ▶'}</button></div>`);
+    ${L.bonus ? '' : `<button class="btn main" id="wNext">${isBoss ? '看故事 ▶' : '下一案 ▶'}</button>`}</div>`);
   $('wAgain').onclick = () => { closeDlg(); resetStage(0); };
   $('wMap').onclick = () => { closeDlg(); openMap(); };
-  $('wNext').onclick = () => {
+  if ($('wNext')) $('wNext').onclick = () => {
     closeDlg();
     if (isBoss){
       S.save.seen['end' + L.scene] = true; writeSave();
@@ -1998,7 +2159,23 @@ function updateCounter(){
   const L = curL(), n = countAll(), c = $('counter');
   c.textContent = `積木 ${n} 塊 ／ 目標 ${L.target} 塊以內`;
   c.className = n === 0 ? '' : (n <= L.target ? 'ok' : 'over');
+  updateHand();
 }
+/* 第一關的手指教學：還沒放積木時，示範把「移動」拖到🚩下面 */
+function updateHand(){
+  const h = $('hand'); if (!h) return;
+  const L = S.li != null && LEVELS[S.li];
+  const on = L && L.id === '1-1' && !S.running && $('game').classList.contains('on') && !$('modal').classList.contains('on') && countAll() === 0;
+  if (!on){ h.classList.remove('on'); return; }
+  const src = palEl.querySelector('[data-type="move1"]'), hat = wsInner.querySelector('.stack');
+  if (!src || !hat){ h.classList.remove('on'); return; }
+  const a = src.getBoundingClientRect(), b = hat.getBoundingClientRect();
+  h.style.left = '0px'; h.style.top = '0px';
+  h.style.setProperty('--x0', (a.left + 20) + 'px'); h.style.setProperty('--y0', (a.top + 8) + 'px');
+  h.style.setProperty('--x1', (b.left + 24) + 'px'); h.style.setProperty('--y1', (b.bottom + 4) + 'px');
+  h.classList.add('on');
+}
+window.addEventListener('resize', () => updateHand());
 function scriptChanged(){
   S.save.scripts[curL().id] = S.sc;
   writeSave(); updateCounter();
@@ -2133,16 +2310,16 @@ function reviveIds(b){ b.id = uid(); if (b.slots) for (const k in b.slots) if (b
 /* =========================================================
    畫面切換
    ========================================================= */
-function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); }
-function openDlg(html, wide){ $('dlg').innerHTML = html; $('dlg').classList.toggle('wide', !!wide); $('modal').classList.add('on'); }
-function closeDlg(){ $('modal').classList.remove('on'); }
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); updateHand(); }
+function openDlg(html, wide){ $('dlg').innerHTML = html; $('dlg').classList.toggle('wide', !!wide); $('modal').classList.add('on'); updateHand(); }
+function closeDlg(){ $('modal').classList.remove('on'); updateHand(); }
 function okDlg(title, msg){ openDlg(`<h2>${title}</h2><p>${msg}</p><div class="row"><button class="btn main" id="dOk">好</button></div>`); $('dOk').onclick = closeDlg; }
 
 function startLevel(i){
   if (!levelOpen(i)) return;
   stopRun();
   S.li = i; const L = curL();
-  S.hintUsed = false; S.cur = 'dog'; S.vi = 0;
+  S.hintUsed = false; S.cur = 'dog'; S.vi = 0; S.predicted = false;
   const saved = S.save.scripts[L.id];
   let sc = null;
   if (saved){
@@ -2159,9 +2336,10 @@ function startLevel(i){
   $('tip').innerHTML = `<span>💡</span><span>${L.tip}</span>`;
   $('runBtn').innerHTML = L.keys ? '🎮 開始操控' : FLAG_ICON.replace(/width="20" height="20"/, 'width="26" height="26"') + ' 執行';
   $('keypad').classList.toggle('on', !!L.keys);
+  $('stepBtn').style.display = L.keys ? 'none' : '';
   renderTabs(); renderPalette(); renderWS(); resetStage(0);
   wsEl.scrollTop = 0; wsEl.scrollLeft = 0;
-  show('game');
+  show('game'); updateHand();
   const cat = S.g.npcs.find(n => n.taunt);
   if (cat){ const tok = S.token; setTimeout(() => { if (S.token === tok && !S.running) showBubble(cat.x*T+30, cat.y*T+4, cat.taunt, 1800, tok, '#F1E6FF').catch(()=>{}); }, 500); }
 }
@@ -2187,9 +2365,9 @@ let mapScene = 1;
 const NODE_POS = [[90,330],[200,262],[318,318],[430,248],[350,150],[470,92],[595,150],[690,252],[800,196],[880,92]];
 function openMap(){
   const n = totalStars();
-  $('mWho').textContent = ACC && !ACC.guest ? `${ACC.cls} 班 ${ACC.seat} 號 ${ACC.name || ''}` : '訪客';
+  $('mWho').textContent = whoText();
   $('mRank').textContent = rankName(n);
-  $('mStars').textContent = `⭐ ${n} / 150`;
+  $('mStars').textContent = `⭐ ${n} / ${MAX_STARS()}`;
   $('mBoard').style.display = ACC && ACC.cloud ? '' : 'none';
   setCloud(S.save.pending.length ? 'wait' : 'ok');
   if (sceneLock(mapScene)) mapScene = 1;
@@ -2243,6 +2421,19 @@ function sceneMapSvg(sn){
       <text x="${x}" y="${y-r-8}" text-anchor="middle" font-size="14" font-weight="bold" fill="${INK}" stroke="#fff" stroke-width="4" paint-order="stroke">${L.name}</text>
     </g>`;
   });
+  const bi = LEVELS.findIndex(L => L.bonus && L.scene === sn);
+  if (bi >= 0){
+    const L = LEVELS[bi], p = S.save.progress[L.id], open = levelOpen(bi), [x,y] = [560,368];
+    const stars = p ? [0,1,2].map(q => q < p.stars ? '★' : '☆').join('') : '';
+    nodes += `<g class="node ${open?'':'lock'}" data-i="${bi}">
+      ${open && !p ? `<circle cx="${x}" cy="${y}" r="38" fill="#FFD54F" opacity=".55" class="pulse"/>` : ''}
+      <path d="${starPath(x, y+4, 34, 16)}" fill="#000" opacity=".15"/>
+      <path d="${starPath(x, y, 34, 16)}" fill="${p ? '#FFD66B' : open ? '#FFF6D0' : '#D9D2C3'}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+      <text x="${x}" y="${y+7}" text-anchor="middle" font-size="18" font-weight="bold" fill="${open?INK:'#9C9282'}">${open ? '加分' : '🔒'}</text>
+      ${stars ? `<text x="${x+42}" y="${y+22}" font-size="17" fill="#E0A000" stroke="#fff" stroke-width="3" paint-order="stroke">${stars}</text>` : ''}
+      <text x="${x+42}" y="${y}" font-size="15" font-weight="bold" fill="${INK}" stroke="#fff" stroke-width="4" paint-order="stroke">⭐ 加分案件：${L.name}</text>
+    </g>`;
+  }
   const dogAt = NODE_POS[nextI === -1 ? 9 : nextI - first];
   return `<svg viewBox="0 0 1000 420">${mapBg(sc.theme)}
     <path d="M${pts}" fill="none" stroke="#EEDDB7" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2265,18 +2456,43 @@ function openNotebook(){
     });
     h += '</div>';
   }
-  openDlg(`<h2>📓 偵探筆記本</h2><p>已蒐集 ${Object.keys(S.save.progress).length} / 50 條線索</p>${h}<div class="row"><button class="btn main" id="nOk">關閉</button></div>`, true);
+  openDlg(`<h2>📓 偵探筆記本</h2><p>已蒐集 ${LEVELS.filter(L => S.save.progress[L.id]).length} / ${LEVELS.length} 條線索（含 ⭐ 加分案件）</p>${h}<div class="row"><button class="btn main" id="nOk">關閉</button></div>`, true);
   $('nOk').onclick = closeDlg;
 }
+let boardLv = null;
+function boardShell(tab, body){
+  const opts = LEVELS.filter(L => S.save.progress[L.id]).map(L => `<option value="${L.id}" ${L.id === boardLv ? 'selected' : ''}>${L.id}「${L.name}」</option>`).join('');
+  openDlg(`<h2>🏆 ${ACC.cls} 班偵探榜</h2>
+    <div class="rtabs"><button class="${tab==='star'?'on':''}" id="rbStar">⭐ 總星數</button><button class="${tab==='lv'?'on':''}" id="rbLv">🧩 每關最少積木</button></div>
+    ${tab === 'lv' ? (opts ? `<p>案件：<select id="rbSel">${opts}</select></p>` : '<p>你破案以後，就可以看那一關誰用的積木最少！</p>') : ''}
+    <div id="rbBody">${body}</div><div class="row"><button class="btn main" id="dOk">關閉</button></div>`);
+  $('dOk').onclick = closeDlg;
+  $('rbStar').onclick = () => openBoard();
+  $('rbLv').onclick = () => openLvBoard();
+  if ($('rbSel')) $('rbSel').onchange = () => { boardLv = $('rbSel').value; openLvBoard(); };
+}
 async function openBoard(){
-  openDlg(`<h2>🏆 ${ACC.cls} 班偵探榜</h2><p>讀取中……</p>`);
+  boardShell('star', '<p>讀取中……</p>');
   try {
     const r = await api({action:'rank', cls:ACC.cls, seat:ACC.seat, pw:ACC.pw});
     if (!r.ok) throw new Error(r.msg);
     const rows = r.list.map((s,i) => `<tr class="${s.seat == ACC.seat ? 'me' : ''}"><td>${['🥇','🥈','🥉'][i] || (i+1)}</td><td>${s.seat} 號 ${esc(s.name)}</td><td>${rankName(s.stars)}</td><td>⭐ ${s.stars}</td></tr>`).join('');
-    openDlg(`<h2>🏆 ${ACC.cls} 班偵探榜</h2><table class="rank">${rows || '<tr><td>還沒有人破案喔！</td></tr>'}</table><div class="row"><button class="btn main" id="dOk">關閉</button></div>`);
-    $('dOk').onclick = closeDlg;
-  } catch(e){ okDlg('🏆 偵探榜', '連不上網路，等一下再試試看。'); }
+    if ($('rbBody')) $('rbBody').innerHTML = `<table class="rank">${rows || '<tr><td>還沒有人破案喔！</td></tr>'}</table>`;
+  } catch(e){ if ($('rbBody')) $('rbBody').innerHTML = '<p>連不上網路，等一下再試試看。</p>'; }
+}
+async function openLvBoard(){
+  const done = LEVELS.filter(L => S.save.progress[L.id]);
+  if (!boardLv || !S.save.progress[boardLv]) boardLv = done.length ? done[done.length-1].id : null;
+  boardShell('lv', boardLv ? '<p>讀取中……</p>' : '');
+  if (!boardLv) return;
+  const lv = boardLv;
+  try {
+    const r = await api({action:'lvrank', cls:ACC.cls, seat:ACC.seat, pw:ACC.pw, lv});
+    if (!r.ok) throw new Error(r.msg);
+    if (lv !== boardLv || !$('rbBody')) return;
+    const rows = r.list.map((s,i) => `<tr class="${s.seat == ACC.seat ? 'me' : ''}"><td>${['🥇','🥈','🥉'][i] || (i+1)}</td><td>${s.seat} 號 ${esc(s.name)}</td><td>🧩 ${s.blocks} 塊</td><td>${'⭐'.repeat(s.stars)}</td></tr>`).join('');
+    $('rbBody').innerHTML = `<table class="rank">${rows || '<tr><td>還沒有人破這一關喔！</td></tr>'}</table><p style="font-size:14px;color:var(--ink2)">積木越少越厲害！（事件積木不算）</p>`;
+  } catch(e){ if ($('rbBody')) $('rbBody').innerHTML = '<p>連不上網路，等一下再試試看。</p>'; }
 }
 
 /* =========================================================
@@ -2370,6 +2586,35 @@ const BOOK_ART = {
     ${put(345,215,3.1,kidArt())}${put(60,235,1.7,dogArt({happy:true, badge:true}))}${putF(690,330,.9,catArt({nomask:true}))}${put(250,150,.8,birdArt())}
     <text x="400" y="60" text-anchor="middle" font-size="34" font-weight="bold" fill="#E8574A" stroke="#fff" stroke-width="6" paint-order="stroke">全劇終</text>`),
 };
+/* 「在 Scratch 裡長這樣」對照卡：左邊是遊戲裡的積木，右邊是 Scratch 3 的積木 */
+const SC_COL = {event:'#FFBF00', motion:'#4C97FF', looks:'#9966FF', control:'#FFAB19', sense:'#5CB1D6', var:'#FF8C1A', op:'#59C059'};
+const SCRATCH_MAP = {
+  1:[['event','當 🚩 被點擊','event','當 🚩 被點擊'],['motion','移動 1 格','motion','移動 10 點'],['motion','向右轉 ↻','motion','右轉 ↻ 90 度'],['motion','向左轉 ↺','motion','左轉 ↺ 90 度']],
+  2:[['control','重複 3 次','control','重複 10 次'],['looks','說 你好','looks','說出 Hello! 持續 2 秒'],['motion','移動 3 格','motion','移動 30 點']],
+  3:[['event','當按下 → 右鍵','event','當 向右 鍵被按下'],['control','如果〈 〉那麼','control','如果〈 〉那麼'],['sense','前方有障礙？','sense','碰到 邊緣 ？'],['sense','腳下是 紅色？','sense','碰到顏色 ■ ？']],
+  4:[['var','把 骨頭 改變 1','var','變數 骨頭 改變 1'],['var','把 骨頭 設為 0','var','變數 骨頭 設為 0'],['var','骨頭 > 2','op','( 骨頭 ) > 2'],['looks','說出 骨頭 的數字','looks','說出 ( 骨頭 )']],
+  5:[['control','重複直到〈 〉','control','重複直到〈 〉'],['control','不停重複','control','重複無限次'],['event','廣播 開門','event','廣播訊息 開門'],['event','當收到 開門','event','當收到訊息 開門']],
+};
+function scratchCard(s){
+  const rows = SCRATCH_MAP[s], blk = (x, y, c, t) => {
+    const w = Math.max(170, [...t].reduce((a, ch) => a + (/[⺀-￿]/.test(ch) ? 21 : 12), 0) + 34);
+    return `<g transform="translate(${x} ${y})"><rect width="${w}" height="50" rx="9" fill="${SC_COL[c]}" stroke="rgba(0,0,0,.22)" stroke-width="3"/><rect x="18" y="46" width="26" height="9" rx="4" fill="${SC_COL[c]}"/>
+      <text x="16" y="33" font-size="21" font-weight="bold" fill="#fff">${t}</text></g>`;
+  };
+  return svgw(`<rect width="800" height="450" fill="#FFF6DD"/>
+    <text x="400" y="46" text-anchor="middle" font-size="30" font-weight="bold" fill="${INK}">🐱 在 Scratch 裡長這樣！</text>
+    <text x="190" y="84" text-anchor="middle" font-size="18" fill="#7A6A55">汪汪偵探社</text><text x="590" y="84" text-anchor="middle" font-size="18" fill="#7A6A55">Scratch</text>
+    ${rows.map((r, i) => { const y = 100 + i * 84;
+      return blk(70, y, r[0], r[1]) + `<text x="398" y="${y+34}" text-anchor="middle" font-size="30" fill="#B07A48">➜</text>` + blk(450, y, r[2], r[3]); }).join('')}`);
+}
+for (let s=1; s<=5; s++) BOOK_ART['scratch' + s] = () => scratchCard(s);
+const SCRATCH_TEXT = {
+  1:'你學會的積木，在真正的 <b>Scratch</b> 裡也找得到！Scratch 的角色是用「點」來走的，所以「移動 1 格」就像「移動 10 點」。',
+  2:'Scratch 也有<b>「重複」</b>，放在橘色的「控制」類別裡。下次打開 Scratch，試試用重複畫一個正方形！',
+  3:'Scratch 裡的<b>「當 ○ 鍵被按下」</b>和<b>「如果」</b>也一模一樣。「碰到顏色？」可以點色塊，選角色要碰到的顏色。',
+  4:'在 Scratch 裡要先按<b>「建立一個變數」</b>，才會出現變數積木。比大小的「>」放在綠色的「運算」類別。',
+  5:'「重複直到」、「重複無限次」和<b>「廣播訊息」</b>都在 Scratch 裡！好幾個角色用廣播互相通知，就能做出很棒的動畫和遊戲。',
+};
 const INTRO_PAGES = [
   {art:'office', text:'這裡是「汪汪偵探社」。汪汪是全鎮最聰明的小狗偵探，再難的案子都難不倒牠！牆上掛著的，是牠最寶貝的<b>偵探徽章</b>。'},
   {art:'night',  text:'有一天晚上，一隻戴著紫色面具的黑貓<b>「喵影」</b>偷偷溜進偵探社……叼走了汪汪的偵探徽章！'},
@@ -2390,6 +2635,7 @@ const END_PAGES = {
      {art:'final2', text:'汪汪笑了：「下次想玩，直接來敲門就好啦！」汪汪、小黑和啾啾，一起踏上回家的路。'},
      {art:'final3', text:'家門口，主人正焦急地等著。「汪汪，你回來了！」<br>恭喜你，偵探助手！你用程式積木陪汪汪破了 <b>50 個案子</b>，你就是真正的<b>名偵探</b>！'}],
 };
+for (let s=1; s<=5; s++) END_PAGES[s].splice(s === 5 ? END_PAGES[s].length : 1, 0,{art:'scratch' + s, text:SCRATCH_TEXT[s]});
 function storyPages(){
   let p = INTRO_PAGES.slice();
   for (let s=1; s<=5; s++) if (S.save.seen['end'+s]) p = p.concat(END_PAGES[s]);
@@ -2417,7 +2663,7 @@ function enterGame(){
   if (ACC && ACC.cloud){
     const prog = {};
     for (const [lv, p] of Object.entries(ACC.prog || {})) prog[lv] = {stars:p.stars, blocks:p.blocks};
-    for (const r of S.save.pending){ const o = prog[r.lv]; if (!o || r.stars > o.stars || (r.stars === o.stars && r.blocks < o.blocks)) prog[r.lv] = {stars:r.stars, blocks:r.blocks}; }
+    for (const r of S.save.pending){ if (r.t === 'att') continue; const o = prog[r.lv]; if (!o || r.stars > o.stars || (r.stars === o.stars && r.blocks < o.blocks)) prog[r.lv] = {stars:r.stars, blocks:r.blocks}; }
     S.save.progress = prog;
     S.save.seen = {intro: S.save.seen.intro};
   }
@@ -2430,12 +2676,24 @@ function enterGame(){
   else openMap();
   if (S.save.pending.length) flushCloud();
 }
+function whoText(){
+  if (!ACC) return '';
+  if (ACC.demo) return '👩‍🏫 示範模式（全部解鎖）';
+  return ACC.guest ? '訪客' : `${ACC.cls} 班 ${ACC.seat} 號 ${ACC.name || ''}`;
+}
 function updateWho(){
-  $('tWho').textContent = ACC ? (ACC.guest ? '目前：訪客' : `目前：${ACC.cls} 班 ${ACC.seat} 號 ${ACC.name || ''}`) : '';
+  $('tWho').innerHTML = ACC ? `目前：${esc(whoText())}　<button class="link" id="tSwitch">${ACC.demo ? '結束示範' : '不是我？換人登入'}</button>` : '';
+  if (ACC) $('tSwitch').onclick = logout;
+}
+async function logout(){
+  if (S.running) stopRun();
+  if (ACC && ACC.cloud && S.save && S.save.pending.length){ try { await flushCloud(); } catch(e) {} }
+  ACC = null; S.save = null; closeDlg(); updateWho(); show('title');
 }
 function openLogin(){
   $('lCls').innerHTML = CLASSES.map(c => `<option>${c}</option>`).join('');
-  try { const last = JSON.parse(localStorage.getItem(SAVE_PREFIX + 'last') || 'null'); if (last){ $('lCls').value = last.cls; $('lSeat').value = last.seat; } } catch(e) {}
+  try { const last = JSON.parse(localStorage.getItem(SAVE_PREFIX + 'last') || 'null'); if (last) $('lCls').value = last.cls; } catch(e) {}
+  $('lSeat').value = '';
   $('lPw').value = ''; $('lErr').textContent = '';
   setLoginMode(false);
   show('login'); setTimeout(() => ($('lSeat').value ? $('lPw') : $('lSeat')).focus(), 50);
@@ -2526,24 +2784,33 @@ async function loadClass(){
 function studentSummary(st){
   const prog = st.prog || {};
   const stars = Object.values(prog).reduce((a,b) => a + b, 0);
-  const done = LEVELS.filter(L => prog[L.id]).length;
-  const next = LEVELS.find(L => !prog[L.id]);
-  return {stars, done, cur: next ? next.id : '全破'};
+  const done = MAIN().filter(L => prog[L.id]).length;
+  const bonus = LEVELS.filter(L => L.bonus && prog[L.id]).length;
+  const next = MAIN().find(L => !prog[L.id]);
+  const att = st.att || {}, curFails = next ? (att[next.id] || 0) : 0;
+  return {stars, done, bonus, cur: next ? next.id : '全破', curFails, stuck: curFails >= STUCK_N};
 }
+const STUCK_N = 8;
 function renderClass(){
-  const head = `<tr><th>座號</th><th>姓名</th><th>目前案件</th><th>破案數</th><th>總星數</th><th>等級</th><th>最後遊玩</th><th>各案件星數（情境一 → 五）</th></tr>`;
+  const head = `<tr><th>座號</th><th>姓名</th><th>目前案件</th><th>卡關</th><th>破案數</th><th>總星數</th><th>等級</th><th>最後遊玩</th><th>各案件星數（情境一 → 五，最後一格是 ⭐ 加分）</th></tr>`;
   const rows = TDATA.students.map(st => {
-    const sm = studentSummary(st), prog = st.prog || {};
-    const cells = [1,2,3,4,5].map(s => `<span class="grp">${LEVELS.filter(L => L.scene === s).map(L => `<i class="s${prog[L.id]||0}" title="${L.id} ${L.name}：${prog[L.id]||0} 星"></i>`).join('')}</span>`).join('');
-    return `<tr><td>${st.seat}</td><td class="name" data-seat="${st.seat}">${esc(st.name)}</td><td>${sm.cur}</td><td>${sm.done} / 50</td><td>⭐ ${sm.stars}</td><td>${rankName(sm.stars)}</td><td>${esc(st.last || '')}</td><td><div class="cells">${cells}</div></td></tr>`;
+    const sm = studentSummary(st), prog = st.prog || {}, att = st.att || {};
+    const cells = [1,2,3,4,5].map(s => `<span class="grp">${LEVELS.filter(L => L.scene === s).map(L => {
+      const f = att[L.id] || 0, stuck = !prog[L.id] && f >= STUCK_N;
+      return `<i class="s${prog[L.id]||0}${L.bonus ? ' bn' : ''}${stuck ? ' stuck' : ''}" title="${L.id} ${L.name}：${prog[L.id]||0} 星${f ? `，失敗 ${f} 次` : ''}"></i>`;
+    }).join('')}</span>`).join('');
+    return `<tr><td>${st.seat}</td><td class="name" data-seat="${st.seat}">${esc(st.name)}</td><td class="${sm.stuck ? 'stuck' : ''}">${sm.cur}</td>
+      <td class="${sm.stuck ? 'stuck' : ''}">${sm.curFails ? (sm.stuck ? '⚠️ ' : '') + sm.curFails + ' 次' : ''}</td>
+      <td>${sm.done} / 50${sm.bonus ? `<br><small>＋⭐${sm.bonus}</small>` : ''}</td><td>⭐ ${sm.stars}</td><td>${rankName(sm.stars)}</td><td>${esc(st.last || '')}</td><td><div class="cells">${cells}</div></td></tr>`;
   }).join('');
-  $('tTable').innerHTML = TDATA.students.length ? `<table class="ttable">${head}${rows}</table>` : '<p>這個班還沒有學生名單。請在試算表「學生名單」加入學生。</p>';
+  const nStuck = TDATA.students.filter(st => studentSummary(st).stuck).length;
+  $('tTable').innerHTML = TDATA.students.length ? `${nStuck ? `<p style="color:var(--coral-d);text-align:left">⚠️ 有 ${nStuck} 位同學在目前的案件失敗 ${STUCK_N} 次以上（紅色），可以過去看看。</p>` : ''}<table class="ttable">${head}${rows}</table>` : '<p>這個班還沒有學生名單。請在試算表「學生名單」加入學生。</p>';
   $('tTable').querySelectorAll('td.name').forEach(td => td.onclick = () => studentDlg(+td.dataset.seat));
 }
 function studentDlg(seat){
   const st = TDATA.students.find(s => s.seat == seat), sm = studentSummary(st);
   openDlg(`<h2>${TDATA.cls} 班 ${seat} 號 ${esc(st.name)}</h2>
-    <p>破案 ${sm.done} / 50　⭐ ${sm.stars}　目前案件 ${sm.cur}</p>
+    <p>破案 ${sm.done} / 50${sm.bonus ? `（加分案件 ${sm.bonus} 個）` : ''}　⭐ ${sm.stars}　目前案件 ${sm.cur}${sm.curFails ? `（失敗 ${sm.curFails} 次）` : ''}</p>
     <p>登入密碼：<b id="sPw" style="font-size:22px;letter-spacing:3px">${esc(st.pw || '（還沒設定）')}</b></p>
     <div class="row"><button class="btn" id="sNewPw">🔑 清除密碼（讓學生重新設定）</button><button class="btn" id="sDel">🗑️ 刪除這位學生</button></div>
     <h3 style="margin:18px 0 6px">♻️ 重設進度</h3>
@@ -2580,11 +2847,11 @@ $('tOpen').onchange = async () => {
   } catch(e){ $('tMsg').textContent = '⚠️ 設定失敗，請再試一次'; }
 };
 function csvOf(datas){
-  const head = ['班級','座號','姓名','破案數','總星數','等級','最後遊玩', ...LEVELS.map(L => L.id)];
+  const head = ['班級','座號','姓名','破案數','加分案件','總星數','等級','目前案件','目前案件失敗次數','最後遊玩', ...LEVELS.map(L => L.id)];
   const rows = [head];
   for (const d of datas) for (const st of d.students){
     const sm = studentSummary(st);
-    rows.push([d.cls, st.seat, st.name, sm.done, sm.stars, rankName(sm.stars).replace(/^\S+\s/, ''), st.last || '', ...LEVELS.map(L => (st.prog||{})[L.id] || 0)]);
+    rows.push([d.cls, st.seat, st.name, sm.done, sm.bonus, sm.stars, rankName(sm.stars).replace(/^\S+\s/, ''), sm.cur, sm.curFails, st.last || '', ...LEVELS.map(L => (st.prog||{})[L.id] || 0)]);
   }
   return '﻿' + rows.map(r => r.map(v => { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }).join(',')).join('\r\n');
 }
@@ -2627,8 +2894,8 @@ $('tStart').onclick = () => {
   if (ACC){ enterGame(); return; }
   if (SCRIPT_URL) openLogin(); else { ACC = {guest:true}; enterGame(); }
 };
-$('tStory').onclick = () => { if (!S.save){ ACC = ACC || {guest:true}; S.save = loadSave(); } openBook(storyPages(), () => show('title')); };
-$('tNote').onclick = () => { if (!S.save){ ACC = ACC || {guest:true}; S.save = loadSave(); } openNotebook(); };
+$('tStory').onclick = () => { if (!S.save) S.save = loadSave(); openBook(storyPages(), () => show('title')); };
+$('tNote').onclick = () => { if (!S.save) S.save = loadSave(); openNotebook(); };
 $('tTeacher').onclick = () => {
   if (!SCRIPT_URL){ okDlg('👩‍🏫 教師登入', '還沒有設定雲端（SCRIPT_URL），請先照「設定說明」建立試算表。'); return; }
   $('tPw').value = ''; $('tErr').textContent = ''; show('tlogin'); setTimeout(() => $('tPw').focus(), 50);
@@ -2637,9 +2904,12 @@ $('mNote').onclick = openNotebook;
 $('mBoard').onclick = openBoard;
 $('mStory').onclick = () => openBook(storyPages(), openMap);
 $('mHome').onclick = () => { updateWho(); show('title'); };
+$('mOut').onclick = logout;
+$('tDemo').onclick = () => { ACC = {guest:true, demo:true}; enterGame(); };
 $('gMap').onclick = () => { stopRun(); openMap(); };
 $('gHint').onclick = showHint;
-$('runBtn').onclick = run;
+$('runBtn').onclick = () => run();
+$('stepBtn').onclick = () => { if (S.running){ if (S.stepMode) stepPress(); } else run(true); };
 $('stopBtn').onclick = stopRun;
 $('rstBtn').onclick = () => { if (!S.running) resetStage(0); else stopRun(); };
 $('gReset').onclick = () => {
