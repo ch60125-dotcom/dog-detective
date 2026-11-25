@@ -1,0 +1,2671 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>汪汪偵探社</title>
+<style>
+:root{
+  --paper:#FBF5E9; --paper2:#F3E9D6; --card:#FFFDF8; --ink:#4A3A2A; --ink2:#7A6450; --line:#E2D2B4;
+  --coral:#E2725B; --coral-d:#B9533E; --leaf:#7DB35B; --leaf-d:#4F8A3A; --gold:#F5B935;
+  --c-motion:#4C97FF; --c-motion-d:#3373CC; --c-looks:#9966FF; --c-looks-d:#774DCB;
+  --c-event:#FFBF00; --c-event-d:#CC9900; --c-control:#FFAB19; --c-control-d:#CF8B17;
+  --c-sense:#5CB1D6; --c-sense-d:#2E8EB8; --c-var:#FF8C1A; --c-var-d:#DB6E00;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--paper);color:var(--ink);overflow:hidden;
+  font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .35 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+button,select,input{font-family:inherit}
+button{cursor:pointer}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+.btn{border:3px solid var(--ink);background:#fff;color:var(--ink);border-radius:14px;padding:8px 18px;font-size:17px;font-weight:bold;box-shadow:0 4px 0 var(--ink);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.main{background:var(--coral);color:#fff}
+.btn.green{background:var(--leaf);color:#fff}
+.btn.small{font-size:15px;padding:5px 12px;border-width:2.5px;box-shadow:0 3px 0 var(--ink);border-radius:11px}
+.btn:disabled{opacity:.5;cursor:default}
+.link{background:none;border:none;color:var(--ink2);text-decoration:underline;font-size:15px}
+
+/* ===== 標題 ===== */
+#title{align-items:center;justify-content:center;gap:10px}
+#title .art{width:min(760px,92vw)}
+#title .btns{display:flex;gap:16px;margin-top:6px;flex-wrap:wrap;justify-content:center}
+#title .btn{font-size:22px;padding:10px 28px}
+#title .ver{color:var(--ink2);font-size:14px;margin-top:8px;display:flex;gap:14px;align-items:center}
+
+/* ===== 登入 ===== */
+#login{align-items:center;justify-content:center}
+.card{background:var(--card);border:4px solid var(--ink);border-radius:22px;padding:22px 30px;box-shadow:0 8px 0 rgba(74,58,42,.25);width:min(440px,92vw)}
+.card h2{margin:0 0 14px;text-align:center}
+.field{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:19px;font-weight:bold}
+.field label{width:80px}
+.field select,.field input{flex:1;font-size:20px;padding:7px 10px;border:3px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink)}
+.err{color:var(--coral-d);font-weight:bold;min-height:24px;text-align:center;margin:6px 0}
+
+/* ===== 繪本 ===== */
+#book{align-items:center;justify-content:center}
+.bookwrap{width:min(900px,94vw);background:var(--card);border:4px solid var(--ink);border-radius:22px;padding:18px 18px 14px;box-shadow:0 8px 0 rgba(74,58,42,.25)}
+.bookpage{animation:pagein .45s ease}
+@keyframes pagein{from{opacity:0;transform:translateX(30px) rotate(.6deg)}to{opacity:1;transform:none}}
+.bookpage svg{width:100%;display:block;border-radius:14px;border:3px solid var(--ink)}
+.booktext{font-size:21px;line-height:1.7;margin:12px 6px 6px;min-height:72px}
+.bookbar{display:flex;align-items:center;gap:10px}
+.dots{flex:1;display:flex;justify-content:center;gap:8px}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--line);display:block}
+.dots i.on{background:var(--coral)}
+
+/* ===== 上方列 ===== */
+.topbar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:var(--card);border-bottom:3px solid var(--ink)}
+.topbar h1{font-size:21px;margin:0;white-space:nowrap}
+.topbar .sp{flex:1}
+.chip{background:var(--paper2);border:2px solid var(--ink);border-radius:20px;padding:3px 12px;font-weight:bold;font-size:15px;white-space:nowrap}
+
+/* ===== 地圖 ===== */
+#map .tabs{display:flex;gap:10px;justify-content:center;padding:12px;flex-wrap:wrap}
+.tab{border:3px solid var(--ink);border-radius:14px;background:#fff;padding:6px 16px;font-size:17px;font-weight:bold;color:var(--ink)}
+.tab.on{background:var(--gold)}
+.tab.lock{opacity:.5}
+#mapArt{flex:1;display:flex;align-items:center;justify-content:center;padding:0 16px 16px;min-height:0}
+#mapArt svg{max-width:1000px;width:100%;max-height:100%;border:4px solid var(--ink);border-radius:20px;background:#fff}
+.node{cursor:pointer}
+.node.lock{cursor:default}
+.pulse{animation:pulse 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.18);opacity:.35}}
+
+/* ===== 遊戲 ===== */
+#game .topbar{padding:7px 14px}
+#game .topbar h1{font-size:19px}
+.gmain{flex:1;display:flex;min-height:0}
+#palette{width:250px;flex:none;background:var(--card);border-right:3px solid var(--ink);overflow-y:auto;overflow-x:hidden;padding:8px 10px 40px;position:relative;transition:background .15s}
+#palette.trash{background:#FBE0DA}
+#palette.trash::after{content:"🗑️ 放開就刪除";position:sticky;bottom:0;display:block;text-align:center;font-weight:bold;color:var(--coral-d);padding:8px;background:#FBE0DA}
+.pcat{font-weight:bold;font-size:15px;margin:10px 0 7px;display:flex;align-items:center;gap:6px}
+.pcat i{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid rgba(0,0,0,.25)}
+.pwrap{margin-bottom:11px}
+#wsBox{flex:1;position:relative;min-width:0;display:flex;flex-direction:column}
+#tip{background:#FFF6CF;border-bottom:2px dashed var(--line);padding:7px 14px;font-size:16px;display:flex;gap:8px;align-items:center}
+#tip b{color:var(--coral-d)}
+#actTabs{display:none;gap:8px;padding:6px 12px 0;background:#FFFEFB;border-bottom:2px solid var(--line)}
+#actTabs.on{display:flex}
+#actTabs button{border:2.5px solid var(--ink);border-bottom:none;border-radius:10px 10px 0 0;background:var(--paper2);padding:5px 14px;font-size:16px;font-weight:bold;color:var(--ink)}
+#actTabs button.on{background:#fff;position:relative;top:2px}
+#ws{flex:1;overflow:auto;position:relative;background-color:#FFFEFB;background-image:radial-gradient(#E6DCC6 1.3px,transparent 1.4px);background-size:22px 22px}
+#ws.locked{pointer-events:none}
+#wsInner{position:relative;width:1600px;height:1400px}
+#counter{position:absolute;right:14px;bottom:12px;background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:5px 12px;font-weight:bold;font-size:16px;pointer-events:none}
+#counter.ok{background:#E3F4D6}
+#counter.over{background:#FDE3DC}
+#wsTools{position:absolute;left:14px;bottom:12px;display:flex;gap:8px}
+.side{width:510px;flex:none;display:flex;flex-direction:column;border-left:3px solid var(--ink);background:var(--card);padding:10px 14px;gap:9px;overflow-y:auto}
+.case{border:3px solid var(--ink);border-radius:14px;padding:9px 13px;background:#FFF9EC;position:relative}
+.case .tag{position:absolute;top:-12px;left:12px;background:var(--coral);color:#fff;border:2px solid var(--ink);border-radius:8px;padding:0 8px;font-size:13px;font-weight:bold}
+.case p{margin:4px 0 6px;font-size:16px;line-height:1.5}
+.case .req{font-size:14px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:2px 14px}
+.stagewrap{position:relative;border:3px solid var(--ink);border-radius:14px;overflow:hidden;background:#CDE6A5;line-height:0}
+#stage{width:100%;display:block}
+.banner{position:absolute;left:10px;right:10px;bottom:10px;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:10px;font-size:17px;font-weight:bold;line-height:1.4;animation:pop .25s ease}
+.banner.fail{background:#FDE3DC}
+.banner.info{background:#E2F1FB}
+.banner.good{background:#E3F4D6}
+.banner .msg{flex:1}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.ctrls{display:flex;gap:10px;align-items:center}
+#runBtn{font-size:20px;padding:8px 20px;display:flex;align-items:center;gap:8px}
+.speed{display:flex;border:2.5px solid var(--ink);border-radius:11px;overflow:hidden;margin-left:auto}
+.speed button{border:none;background:#fff;padding:6px 10px;font-size:18px}
+.speed button.on{background:var(--gold)}
+#keypad{display:none;gap:8px;align-items:center;justify-content:center}
+#keypad.on{display:flex}
+#keypad button{width:54px;height:46px;font-size:22px;border:3px solid var(--ink);border-radius:12px;background:#fff;box-shadow:0 3px 0 var(--ink);font-weight:bold}
+#keypad button.wide{width:110px;font-size:16px}
+#keypad button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+
+/* ===== 積木 ===== */
+.blk{position:relative;display:flex;align-items:center;gap:6px;width:max-content;min-height:40px;padding:6px 13px;color:#fff;font-weight:bold;font-size:16px;border-radius:7px;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;white-space:nowrap}
+.blk::after{content:"";position:absolute;left:14px;bottom:-6px;width:20px;height:7px;border-radius:0 0 5px 5px;background:inherit;z-index:2;border:inherit;border-top:none}
+.cat-motion{background:var(--c-motion);border:1.5px solid var(--c-motion-d)}
+.cat-looks{background:var(--c-looks);border:1.5px solid var(--c-looks-d)}
+.cat-event{background:var(--c-event);border:1.5px solid var(--c-event-d);color:#5A3E00}
+.cat-control{background:var(--c-control);border:1.5px solid var(--c-control-d)}
+.cat-sense{background:var(--c-sense);border:1.5px solid var(--c-sense-d)}
+.cat-var{background:var(--c-var);border:1.5px solid var(--c-var-d)}
+.blk.hat{border-radius:22px 22px 7px 7px;padding-top:13px;min-width:150px}
+.blk.c{display:block;padding:0}
+.blk.c > .c-head,.blk.c > .c-mid{display:flex;align-items:center;gap:6px;padding:6px 13px;min-height:40px}
+.blk.c > .c-mid{min-height:30px;padding:2px 13px}
+.blk.c > .c-body{margin-left:16px;min-height:34px;min-width:120px;background:#FFFEFB;border-radius:5px 0 0 5px;padding:0 0 2px}
+.blk.c > .c-foot{height:16px}
+.blk.cap::after,.blk.bool::after{display:none}
+.blk.cap > .c-foot{border-radius:0 0 7px 7px}
+.blk.bool{min-height:32px;padding:4px 18px;border-radius:0;border:none;clip-path:polygon(13px 0,calc(100% - 13px) 0,100% 50%,calc(100% - 13px) 100%,13px 100%,0 50%)}
+.slot{display:inline-flex;align-items:center;min-width:52px;min-height:30px;background:rgba(0,0,0,.2);clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,12px 100%,0 50%)}
+.slot.full{background:none;clip-path:none}
+.blk input{font:inherit;font-size:15px;color:#333;border:none;border-radius:13px;padding:2px 6px;width:40px;text-align:center;background:#fff;outline:none;cursor:text}
+.blk input.txt{width:70px}
+.blk select{font:inherit;font-size:14px;color:#333;border:none;border-radius:12px;padding:2px 4px;background:rgba(255,255,255,.92);outline:none;cursor:pointer}
+.blk input:focus,.blk select:focus{box-shadow:0 0 0 2px #333}
+.pal .blk input,.pal .blk select{pointer-events:none}
+.blk .flagic{display:inline-block;vertical-align:middle}
+.blk.running{filter:drop-shadow(0 0 5px #FFF200) drop-shadow(0 0 3px #FFE600)}
+.blk.err{filter:drop-shadow(0 0 4px #FF2A2A) drop-shadow(0 0 3px #FF2A2A)}
+.stack{position:absolute}
+.ghost{position:fixed;pointer-events:none;z-index:50;opacity:.88;filter:drop-shadow(4px 6px 4px rgba(0,0,0,.25))}
+#ind{position:fixed;height:8px;width:110px;border-radius:5px;background:rgba(74,58,42,.45);pointer-events:none;z-index:40;display:none}
+#ind.slotind{height:30px;width:56px;border-radius:15px;background:rgba(255,255,255,.6);border:3px dashed var(--ink)}
+
+/* ===== 對話框 ===== */
+#modal{position:fixed;inset:0;background:rgba(60,45,30,.45);display:none;align-items:center;justify-content:center;z-index:100}
+#modal.on{display:flex}
+.dlg{background:var(--card);border:4px solid var(--ink);border-radius:22px;padding:20px 26px;max-width:min(660px,94vw);max-height:92vh;overflow:auto;box-shadow:0 8px 0 rgba(74,58,42,.3);animation:pop .25s ease;text-align:center}
+.dlg.wide{max-width:min(980px,96vw)}
+.dlg h2{margin:0 0 10px;font-size:26px}
+.dlg p{font-size:17px;line-height:1.6;margin:8px 0}
+.dlg .row{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.bigstars{font-size:54px;letter-spacing:6px;line-height:1.1}
+.bigstars span{display:inline-block;animation:starIn .5s cubic-bezier(.3,1.6,.5,1) both}
+.bigstars span.off{filter:grayscale(1);opacity:.3}
+@keyframes starIn{from{transform:scale(0) rotate(-90deg)}to{transform:none}}
+.notes{font-size:15px;color:var(--ink2);text-align:left;display:inline-block;margin:4px 0}
+.cluebox{display:flex;gap:14px;align-items:center;background:#FFF6CF;border:2.5px dashed var(--ink2);border-radius:14px;padding:10px 14px;margin-top:10px;text-align:left}
+.cluebox svg{flex:none}
+.nb{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:8px}
+.nbs{border:2.5px solid var(--ink);border-radius:12px;padding:6px;background:#fff;font-size:13px;line-height:1.35;min-height:108px}
+.nbs.no{background:var(--paper2);color:#aa9a80;display:flex;align-items:center;justify-content:center;font-size:30px}
+.nbs b{display:block;font-size:14px}
+.hintbox{background:#E2F1FB;border:2.5px solid var(--ink);border-radius:12px;padding:10px 14px;font-size:18px;margin:10px 0;text-align:left;line-height:1.6}
+.rank{width:100%;border-collapse:collapse;font-size:17px;margin-top:6px}
+.rank td{padding:6px 10px;border-bottom:2px dashed var(--line)}
+.rank tr.me{background:#FFF6CF;font-weight:bold}
+
+/* ===== 教師 ===== */
+#teacher .tbody{flex:1;overflow:auto;padding:14px 18px}
+.tbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:17px;font-weight:bold}
+.tbar select{font-size:17px;padding:5px 8px;border:2.5px solid var(--ink);border-radius:10px;background:#fff}
+.ttable{border-collapse:collapse;background:#fff;font-size:15px}
+.ttable th,.ttable td{border:1.5px solid var(--line);padding:4px 7px;text-align:center;white-space:nowrap}
+.ttable th{background:var(--paper2);position:sticky;top:0;z-index:1}
+.ttable tr:hover td{background:#FFF9EC}
+.ttable td.name{text-align:left;cursor:pointer;color:#2E6DB4;text-decoration:underline}
+.cells{display:flex;gap:6px}
+.cells .grp{display:flex;gap:1px}
+.cells i{width:11px;height:15px;display:block;border-radius:2px;background:#EEE6D6}
+.cells i.s1{background:#F7D88A}.cells i.s2{background:#F2B33D}.cells i.s3{background:#D9822B}
+.legend{font-size:14px;color:var(--ink2);display:flex;gap:12px;align-items:center;margin:8px 0}
+.legend i{width:12px;height:14px;display:inline-block;border-radius:2px;vertical-align:middle;margin-right:3px}
+</style>
+</head>
+<body>
+
+<!-- 標題 -->
+<section class="screen on" id="title">
+  <div class="art" id="titleArt"></div>
+  <div class="btns">
+    <button class="btn main" id="tStart">🔍 開始辦案</button>
+    <button class="btn" id="tStory">📖 看故事</button>
+    <button class="btn" id="tNote">📓 偵探筆記本</button>
+  </div>
+  <div class="ver"><span id="tWho"></span><button class="link" id="tTeacher">👩‍🏫 教師登入</button></div>
+</section>
+
+<!-- 學生登入 -->
+<section class="screen" id="login">
+  <div class="card">
+    <h2>🐾 偵探助手報到</h2>
+    <div class="field"><label>班級</label><select id="lCls"></select></div>
+    <div class="field"><label>座號</label><input id="lSeat" inputmode="numeric" maxlength="2" placeholder="例如 5"></div>
+    <div class="field" id="lPwRow"><label>密碼</label><input id="lPw" type="password" inputmode="numeric" maxlength="8" placeholder="4 位數字"></div>
+    <div id="lSet" style="display:none">
+      <p id="lSetMsg" style="background:#FFF6CF;border:2px dashed var(--ink2);border-radius:12px;padding:8px 12px;margin:8px 0;font-size:16px;line-height:1.5"></p>
+      <div class="field" id="lNameRow"><label>姓名</label><input id="lName" maxlength="10" placeholder="你的名字"></div>
+      <div class="field"><label>設定密碼</label><input id="lNew1" type="password" inputmode="numeric" maxlength="4" placeholder="自己想 4 個數字"></div>
+      <div class="field"><label>再打一次</label><input id="lNew2" type="password" inputmode="numeric" maxlength="4" placeholder="同一組數字"></div>
+    </div>
+    <div class="err" id="lErr"></div>
+    <div class="row" style="display:flex;gap:12px;justify-content:center">
+      <button class="btn" id="lBack">返回</button>
+      <button class="btn main" id="lGo">登入</button>
+    </div>
+    <div style="text-align:center;margin-top:12px"><button class="link" id="lGuest">訪客試玩（進度只存在這台電腦）</button></div>
+  </div>
+</section>
+
+<!-- 教師登入 -->
+<section class="screen" id="tlogin">
+  <div class="card">
+    <h2>👩‍🏫 教師登入</h2>
+    <div class="field"><label>密碼</label><input id="tPw" type="password" maxlength="40"></div>
+    <div class="err" id="tErr"></div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn" id="tBack">返回</button><button class="btn main" id="tGo">登入</button>
+    </div>
+  </div>
+</section>
+
+<!-- 教師模式 -->
+<section class="screen" id="teacher">
+  <div class="topbar">
+    <h1>👩‍🏫 教師模式</h1><div class="sp"></div>
+    <button class="btn small" id="tExpCls">📥 匯出本班</button>
+    <button class="btn small" id="tExpAll">📥 匯出全部班級</button>
+    <button class="btn small" id="tOut">登出</button>
+  </div>
+  <div class="tbody">
+    <div class="tbar">
+      班級 <select id="tCls"></select>
+      <span style="margin-left:10px">開放到</span> <select id="tOpen"></select>
+      <button class="btn small" id="tReload">↻ 重新整理</button>
+      <span id="tMsg" style="color:var(--leaf-d)"></span>
+    </div>
+    <div class="legend">每一格是一個案件：<span><i style="background:#EEE6D6"></i>未破</span><span><i style="background:#F7D88A"></i>1 星</span><span><i style="background:#F2B33D"></i>2 星</span><span><i style="background:#D9822B"></i>3 星</span>　點學生姓名可以重設進度、查看或重設密碼。</div>
+    <div id="tTable"></div>
+  </div>
+</section>
+
+<!-- 繪本 -->
+<section class="screen" id="book">
+  <div class="bookwrap">
+    <div class="bookpage" id="bookPage"></div>
+    <div class="bookbar">
+      <button class="btn small" id="bPrev">◀ 上一頁</button>
+      <div class="dots" id="bDots"></div>
+      <button class="btn small" id="bSkip">跳過</button>
+      <button class="btn small main" id="bNext">下一頁 ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- 地圖 -->
+<section class="screen" id="map">
+  <div class="topbar">
+    <h1>🐾 汪汪偵探社</h1>
+    <span class="chip" id="mWho"></span>
+    <span class="chip" id="mRank"></span>
+    <span class="chip" id="mStars"></span>
+    <span class="chip" id="mCloud" title=""></span>
+    <div class="sp"></div>
+    <button class="btn small" id="mBoard">🏆 偵探榜</button>
+    <button class="btn small" id="mNote">📓 筆記本</button>
+    <button class="btn small" id="mStory">📖 故事</button>
+    <button class="btn small" id="mHome">🏠 首頁</button>
+  </div>
+  <div class="tabs" id="mTabs"></div>
+  <div id="mapArt"></div>
+</section>
+
+<!-- 遊戲 -->
+<section class="screen" id="game">
+  <div class="topbar">
+    <h1 id="gTitle"></h1>
+    <div class="sp"></div>
+    <button class="btn small" id="gHint">💡 提示</button>
+    <button class="btn small" id="gSound">🔊</button>
+    <button class="btn small" id="gMap">🗺️ 地圖</button>
+  </div>
+  <div class="gmain">
+    <div id="palette"></div>
+    <div id="wsBox">
+      <div id="tip"></div>
+      <div id="actTabs"></div>
+      <div id="ws"><div id="wsInner"></div></div>
+      <div id="wsTools"><button class="btn small" id="gReset" title="恢復成一開始的程式">↺ 重新開始</button></div>
+      <div id="counter"></div>
+    </div>
+    <div class="side">
+      <div class="case"><span class="tag" id="cTag"></span><p id="cStory"></p><div class="req" id="cReq"></div></div>
+      <div class="stagewrap"><svg id="stage" viewBox="0 0 480 360"></svg><div id="banner"></div></div>
+      <div class="ctrls">
+        <button class="btn green" id="runBtn"></button>
+        <button class="btn small" id="stopBtn">⏹ 停止</button>
+        <button class="btn small" id="rstBtn">↺ 回起點</button>
+        <div class="speed" id="speed">
+          <button data-s="slow" title="慢">🐢</button><button data-s="mid" title="中">🐕</button><button data-s="fast" title="快">🐇</button>
+        </div>
+      </div>
+      <div id="keypad">
+        <button data-k="left">←</button><button data-k="up">↑</button><button data-k="down">↓</button><button data-k="right">→</button><button class="wide" data-k="space">空白鍵</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="modal"><div class="dlg" id="dlg"></div></div>
+<div id="ind"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   ★ 老師設定：貼上 Google Apps Script「網頁應用程式」網址
+     （留空 '' = 單機模式，進度只存在這台電腦）
+   ========================================================= */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZW_tQ_ISY-zutddw0q6tbArta3LQqgsQDlGWofwp6IpsPhB1oMLxM4CWMvMMt_LAQ/exec';
+const CLASSES = ['401','402','403','404','501','502','503','601','602','603'];
+
+/* =========================================================
+   基本設定
+   ========================================================= */
+const T = 60, COLS = 8, ROWS = 6;
+const DIRS = [[1,0],[0,1],[-1,0],[0,-1]]; // 右 下 左 上
+const SPEED_MS = {slow:650, mid:380, fast:170};
+const SAVE_PREFIX = 'dogdetective.v2.';
+const STOP = {stop:true}, WIN = {win:true};
+class Fail { constructor(msg,id){ this.msg = msg; this.id = id; } }
+const $ = id => document.getElementById(id);
+let uidN = 0; const uid = () => 'b' + (++uidN) + Math.random().toString(36).slice(2,6);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const FLAG_ICON = '<svg class="flagic" viewBox="0 0 20 20" width="20" height="20"><path d="M4 2v16" stroke="#2D7D2D" stroke-width="2.2" stroke-linecap="round"/><path d="M5 3h10l-2.6 3.6L15 10H5z" fill="#4CBF56" stroke="#2D7D2D" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+
+/* ---------- 積木定義 ---------- */
+const DIR_OPT = [['0','右'],['1','下'],['2','左'],['3','上']];
+const KEY_OPT = [['right','→ 右鍵'],['left','← 左鍵'],['up','↑ 上鍵'],['down','↓ 下鍵'],['space','空白鍵']];
+const COLOR_OPT = [['r','紅色'],['b','藍色'],['y','黃色']];
+const OP_OPT = [['gt','>'],['eq','='],['lt','<']];
+const BLOCKS = {
+  flag:   {cat:'event', hat:true, label:['當', {flag:1}, '被點擊']},
+  key:    {cat:'event', hat:true, label:['當按下', {sel:'k', opts:KEY_OPT}]},
+  recv:   {cat:'event', hat:true, label:['當收到', {sel:'m', opts:'msgs'}]},
+  bcast:  {cat:'event', label:['廣播', {sel:'m', opts:'msgs'}]},
+  move1:  {cat:'motion', label:['移動 1 格']},
+  moveN:  {cat:'motion', label:['移動', {num:'n', def:3, min:1, max:9}, '格']},
+  right:  {cat:'motion', label:['向右轉 ↻']},
+  left:   {cat:'motion', label:['向左轉 ↺']},
+  face:   {cat:'motion', label:['面向', {sel:'d', opts:DIR_OPT}]},
+  pick:   {cat:'motion', label:['撿起 ✋']},
+  drop:   {cat:'motion', label:['放下 👇']},
+  say:    {cat:'looks', label:['說', {text:'t', def:'你好'}]},
+  sayVar: {cat:'looks', label:['說出', {sel:'v', opts:'vars'}, '的數字']},
+  repeat: {cat:'control', c:true, label:['重複', {num:'n', def:3, min:1, max:30}, '次']},
+  forever:{cat:'control', c:true, cap:true, label:['不停重複']},
+  until:  {cat:'control', c:true, label:['重複直到', {slot:'c'}]},
+  if:     {cat:'control', c:true, label:['如果', {slot:'c'}, '那麼']},
+  ifelse: {cat:'control', c:true, c2:true, label:['如果', {slot:'c'}, '那麼']},
+  wall:   {cat:'sense', bool:true, label:['前方有障礙？']},
+  onItem: {cat:'sense', bool:true, label:['腳下有東西？']},
+  color:  {cat:'sense', bool:true, label:['腳下是', {sel:'c', opts:COLOR_OPT}, '？']},
+  atGoal: {cat:'sense', bool:true, label:['到達 🚩 了？']},
+  setVar: {cat:'var', label:['把', {sel:'v', opts:'vars'}, '設為', {num:'n', def:0, min:-99, max:99}]},
+  chgVar: {cat:'var', label:['把', {sel:'v', opts:'vars'}, '改變', {num:'n', def:1, min:-99, max:99}]},
+  cmp:    {cat:'var', bool:true, label:[{sel:'v', opts:'vars'}, {sel:'o', opts:OP_OPT}, {num:'n', def:3, min:-99, max:99}]},
+};
+const CATS = [
+  ['event','事件','var(--c-event)'], ['motion','動作','var(--c-motion)'], ['looks','外觀','var(--c-looks)'],
+  ['control','控制','var(--c-control)'], ['sense','偵測','var(--c-sense)'], ['var','變數','var(--c-var)'],
+];
+const isHat = t => !!BLOCKS[t].hat;
+const isBool = t => !!BLOCKS[t].bool;
+const argKey = p => p.num || p.text || p.sel;
+function argDefs(type){ return BLOCKS[type].label.filter(p => typeof p === 'object' && argKey(p)); }
+function slotDefs(type){ return BLOCKS[type].label.filter(p => typeof p === 'object' && p.slot); }
+function optsOf(p){
+  if (p.opts === 'vars') return (curL().vars || ['分數']).map(v => [v, v]);
+  if (p.opts === 'msgs') return (curL().msgs || ['訊息1']).map(v => [v, v]);
+  return p.opts;
+}
+function newBlock(type, args){
+  const b = {id:uid(), type, args:{}};
+  for (const p of argDefs(type)) b.args[argKey(p)] = p.sel ? optsOf(p)[0][0] : p.def;
+  if (args) Object.assign(b.args, args);
+  const sd = slotDefs(type);
+  if (sd.length){ b.slots = {}; sd.forEach(p => b.slots[p.slot] = null); }
+  if (BLOCKS[type].c) b.body = [];
+  if (BLOCKS[type].c2) b.body2 = [];
+  return b;
+}
+/* 用文字寫程式（關卡預設程式與自動測試用）
+   例： "flag; repeat 4 { moveN 3; pick; right }"、"if <wall> { right }"、"ifelse <cmp 骨頭 gt 2> { left } else { right }" */
+function parseScript(src){
+  const toks = src.match(/\{|\}|;|<[^>]*>|[^\s{};<>]+/g) || [];
+  let i = 0;
+  const mk = (type, args, bools) => {
+    if (!BLOCKS[type]) throw new Error('不認識的積木：' + type);
+    const b = newBlock(type);
+    argDefs(type).forEach((p,k) => { if (args[k] !== undefined) b.args[argKey(p)] = p.num ? +args[k] : args[k]; });
+    slotDefs(type).forEach((p,k) => b.slots[p.slot] = bools[k] || null);
+    return b;
+  };
+  const parseBool = s => { const w = s.trim().split(/\s+/); return mk(w[0], w.slice(1), []); };
+  function parseList(){
+    const out = [];
+    while (i < toks.length && toks[i] !== '}'){ if (toks[i] === ';'){ i++; continue; } out.push(parseStmt()); }
+    return out;
+  }
+  function parseStmt(){
+    const type = toks[i++], args = [], bools = [];
+    while (i < toks.length && ![';','{','}'].includes(toks[i])){ const t = toks[i++]; if (t[0] === '<') bools.push(parseBool(t.slice(1,-1))); else args.push(t); }
+    const b = mk(type, args, bools);
+    if (BLOCKS[type].c){
+      i++; b.body = parseList(); i++;
+      if (BLOCKS[type].c2 && toks[i] === 'else'){ i += 2; b.body2 = parseList(); i++; }
+    }
+    return b;
+  }
+  return parseList();
+}
+
+/* =========================================================
+   關卡資料
+   地圖符號： . 地面  = 步道  # 障礙（樹/房子/石頭/牆）  * 障礙（花圃/遮陽傘/樹叢/盔甲）  ~ 水
+             G 終點旗  D 長椅  r b y 紅藍黃色地板  K→X、J→Y 踩下按鈕開門
+   ========================================================= */
+const ITEM_INFO = { hanky:'手帕', bell:'鈴鐺', yarn:'毛線球', feather:'羽毛', letter:'信', fish:'小魚乾', shell:'貝殼',
+  bone2:'骨頭', berry:'藍莓', mushroom:'毒菇', acorn:'松果', gem:'寶石', key:'鑰匙', badge:'偵探徽章' };
+const NPC_INFO  = { pigeon:'鴿子', lady:'王阿姨', cat:'喵影', postman:'郵差', owl:'貓頭鷹' };
+const SCENES = [
+  {no:1, name:'公園', icon:'🌳', theme:'park',   next:'往小鎮'},
+  {no:2, name:'小鎮', icon:'🏘️', theme:'town',   next:'往海邊'},
+  {no:3, name:'海邊', icon:'🏖️', theme:'beach',  next:'往森林'},
+  {no:4, name:'森林', icon:'🌲', theme:'forest', next:'往城堡'},
+  {no:5, name:'城堡', icon:'🏰', theme:'castle', next:'回家'},
+];
+const B1 = ['flag','move1','right','left'];
+const B1N = ['flag','moveN','move1','right','left'];
+const B2 = ['flag','move1','moveN','right','left','repeat','pick'];
+const FOREST_ROWS = ['#*##*##*','*#*##*#*','#*#*##*#','*##*#*##'];
+const LEVELS = [
+ /* ---------------- 情境一 公園：順序 ---------------- */
+ { id:'1-1', name:'第一個腳印',
+   story:'公園入口有一個小小的腳印！讓汪汪走到 🚩 那裡看看。',
+   tip:'把左邊的<b>「移動 1 格」</b>拖到<b>「當🚩被點擊」</b>下面，黏起來之後按<b>綠旗</b>！',
+   map:['##....##','........','.====G..','........','*......*','##~~~~##'],
+   start:{x:1,y:2,dir:0}, bone:{x:3,y:2}, win:{reach:true}, target:4, blocks:['flag','move1'],
+   hint1:'汪汪要往右走到 🚩，數數看要走幾格？', hint2:'需要 4 塊「移動 1 格」，一塊接一塊黏在綠旗下面。',
+   clue:{icon:'paw', name:'小貓腳印', desc:'一個小小的梅花腳印——是貓的！'} },
+ { id:'1-2', name:'轉角的花圃',
+   story:'腳印在花圃旁邊轉彎了。小心，不可以踩到花！',
+   tip:'「向右轉」會讓汪汪<b>順時針</b>轉 90 度。注意看汪汪前面的<b>紅色箭頭</b>！',
+   map:['##.....#','#.===...','.***=...','.***=...','....G...','##....##'],
+   start:{x:1,y:1,dir:0}, bone:{x:4,y:3}, win:{reach:true}, target:7, blocks:B1,
+   hint1:'先往右走到步道轉角，再轉彎往下走。', hint2:'移動 ×3 → 向右轉 → 移動 ×3',
+   clue:{icon:'hair', name:'黑色貓毛', desc:'花圃邊卡著幾根黑黑亮亮的貓毛。'} },
+ { id:'1-3', name:'繞過大水窪',
+   story:'前面有一大片水窪，汪汪不想弄濕腳，要繞過去才行。',
+   tip:'可以從上面繞，也可以從下面繞。<b>金骨頭</b>藏在其中一條路上喔！',
+   map:['##..##..','........','...~~~..','...~~~.G','...~~~..','........'],
+   start:{x:1,y:3,dir:0}, bone:{x:4,y:5}, win:{reach:true}, target:14, blocks:B1,
+   hint1:'先走 1 格到水窪旁邊，再決定往上還是往下繞。金骨頭在下面！',
+   hint2:'移動1 → 向右轉 → 移動×2 → 向左轉 → 移動×4 → 向左轉 → 移動×2 → 向右轉 → 移動1',
+   clue:{icon:'wetpaw', name:'濕濕的腳印', desc:'水窪邊的腳印還是濕的，喵影剛剛才經過！'} },
+ { id:'1-4', name:'長長的步道',
+   story:'公園的步道又長又彎，一格一格走太慢了！試試新積木「移動 (N) 格」。',
+   tip:'點一下積木裡的<b>白色數字</b>，就可以改成要走幾格。',
+   map:['........','#######.','........','.#######','.#######','G*******'],
+   start:{x:0,y:0,dir:0}, bone:{x:3,y:2}, win:{reach:true}, target:7, blocks:B1N,
+   hint1:'數一數每一段直線要走幾格，一段用一塊「移動 (N) 格」。',
+   hint2:'移動 7 格 → 向右轉 → 移動 2 格 → 向右轉 → 移動 7 格 → 向左轉 → 移動 3 格',
+   clue:{icon:'map', name:'被咬破的地圖', desc:'公園導覽圖被咬了一個洞，洞的形狀像貓牙。'} },
+ { id:'1-5', name:'溜滑梯迷宮',
+   story:'遊樂場像一座迷宮，叮叮噹噹的鈴鐺聲從出口傳過來！',
+   tip:'這次汪汪一開始是<b>面向上面</b>喔！先看清楚箭頭再轉彎。',
+   map:['##...#.G','##.#.#.#','...#...#','.#.####.','.#......','.#####..'],
+   start:{x:0,y:5,dir:3}, bone:{x:4,y:1}, win:{reach:true}, target:15, blocks:B1N,
+   hint1:'迷宮是彎彎曲曲的樓梯形：上、右、上、右、下、右、上、右。',
+   hint2:'移動3 → 右轉 → 移動2 → 左轉 → 移動2 → 右轉 → 移動2 → 右轉 → 移動2 → 左轉 → 移動2 → 左轉 → 移動2 → 右轉 → 移動1',
+   clue:{icon:'note', name:'叮噹的鈴鐺聲', desc:'迷宮出口傳來鈴鐺聲，喵影的脖子上有鈴鐺！'} },
+ { id:'1-6', name:'問問鴿子',
+   story:'公園的鴿子什麼都看得到。走到鴿子旁邊用「說」問問牠，再走到 🚩。',
+   tip:'「說」要站在鴿子<b>旁邊</b>（上、下、左、右相鄰的格子）牠才聽得到喔。',
+   map:['##..##.#','#.......','#......G','#.......','#.......','####...#'],
+   start:{x:1,y:4,dir:0}, bone:{x:6,y:2},
+   npcs:[{id:'pg', kind:'pigeon', x:5, y:1, talk:'咕咕！戴面具的黑貓往東邊跑了！'}],
+   win:{talk:'pg', reach:true}, target:6, blocks:['flag','moveN','move1','right','left','say'],
+   hint1:'先走到鴿子正下方的格子，說完話再往右走到 🚩。',
+   hint2:'移動 4 格 → 向左轉 → 移動 2 格 → 說 你好 → 向右轉 → 移動 2 格',
+   clue:{icon:'talk', name:'鴿子的目擊證詞', desc:'「戴面具的黑貓往東邊跑了！」'} },
+ { id:'1-7', name:'撿起手帕',
+   story:'地上有一條粉紅色手帕，上面黏著貓毛！走到手帕那一格「撿起」它，再走到 🚩。',
+   tip:'汪汪要<b>站在手帕那一格</b>，再用「撿起」才撿得到。',
+   map:['......##','####.###','........','.##...#.','........','....G...'],
+   start:{x:0,y:0,dir:0}, bone:{x:4,y:4}, items:[{id:'hanky', kind:'hanky', x:4, y:2}],
+   win:{items:['hanky'], reach:true}, target:5, blocks:['flag','moveN','move1','right','left','pick'],
+   hint1:'走到手帕那格 → 撿起 → 繼續走到 🚩。', hint2:'移動 4 格 → 向右轉 → 移動 2 格 → 撿起 → 移動 3 格',
+   clue:{icon:'hanky', name:'沾毛的手帕', desc:'手帕上繡著一個名字：「王阿姨」。'} },
+ { id:'1-8', name:'物歸原主',
+   story:'手帕原來是王阿姨的！把手帕撿起來，放到阿姨旁邊<b>閃閃發光的長椅</b>上。',
+   tip:'「放下」會把汪汪手上的東西放在汪汪站的那一格。',
+   map:['##..##..','........','####.###','##...D..','........','**....**'],
+   start:{x:0,y:1,dir:0}, bone:{x:4,y:2}, items:[{id:'hanky', kind:'hanky', x:3, y:1}],
+   npcs:[{id:'lady', kind:'lady', x:6, y:3, thanks:'謝謝你！剛剛有隻黑貓往溜滑梯那邊跑了喔。'}],
+   win:{deliver:'hanky'}, target:8, blocks:['flag','moveN','move1','right','left','pick','drop'],
+   hint1:'撿起手帕以後，要往下走才到得了長椅。',
+   hint2:'移動 3 格 → 撿起 → 移動 1 格 → 向右轉 → 移動 2 格 → 向左轉 → 移動 1 格 → 放下',
+   clue:{icon:'talk', name:'王阿姨的證詞', desc:'「有隻黑貓往溜滑梯那邊跑了喔。」'} },
+ { id:'1-9', name:'找出程式錯誤',
+   story:'有人寫了一段程式要帶汪汪去 🚩，可是汪汪一直撞到樹！找出錯誤並修好它。',
+   tip:'先按<b>綠旗</b>看看汪汪在哪裡出錯，再修改程式。這就叫做<b>「除錯」</b>！',
+   map:['########','#......#','#.****.#','#.****.#','#.....G#','########'],
+   start:{x:1,y:1,dir:0}, bone:{x:6,y:2}, win:{reach:true}, target:3, blocks:B1N,
+   preset:{dog:['flag; moveN 4; left; moveN 3']},
+   hint1:'程式裡有兩個地方錯了：一個是數字，一個是轉彎的方向。', hint2:'應該是：移動 5 格 → 向右轉 → 移動 3 格',
+   clue:{icon:'route', name:'修好的路線圖', desc:'程式修好了！路線圖上標出喵影的逃跑方向。'} },
+ { id:'1-10', name:'追丟了！', boss:true,
+   story:'喵影就在前面！牠故意丟下<b>鈴鐺、毛線球、羽毛</b>。三樣線索都撿起來，再走到 🚩 出口！',
+   tip:'想要<b>向後轉</b>，可以連續「向右轉」兩次喔。',
+   map:['##.#####','##.#####','........','##.##.##','##.##.##','#####G##'],
+   start:{x:0,y:2,dir:0}, bone:{x:4,y:2},
+   items:[{id:'bell', kind:'bell', x:2, y:0},{id:'yarn', kind:'yarn', x:2, y:4},{id:'feather', kind:'feather', x:5, y:4}],
+   npcs:[{id:'cat', kind:'cat', x:7, y:2, taunt:'抓不到我～喵！'}],
+   win:{items:['bell','yarn','feather'], reach:true}, target:17, blocks:['flag','moveN','move1','right','left','pick','drop'],
+   hint1:'先往上撿鈴鐺，向後轉往下撿毛線球，再回到中間的路往右走。',
+   hint2:'移動2 → 左轉 → 移動2 → 撿起 → 右轉 → 右轉 → 移動4 → 撿起 → 右轉 → 右轉 → 移動2 → 右轉 → 移動3 → 右轉 → 移動2 → 撿起 → 移動1',
+   clue:{icon:'bell', name:'喵影的鈴鐺', desc:'喵影逃走時掉下的鈴鐺，上面刻著「小鎮」兩個字。'} },
+
+ /* ---------------- 情境二 小鎮：重複 ---------------- */
+ { id:'2-1', name:'筆直的大街',
+   story:'小鎮的大街又直又長。這次沒有「移動 (N) 格」了，試試新積木<b>「重複」</b>！',
+   tip:'把「移動 1 格」放進<b>「重複 (N) 次」</b>的嘴巴裡，汪汪就會一直做同一件事。',
+   map:['##.##.##','########','=======G','########','##.##.##','........'],
+   start:{x:0,y:2,dir:0}, bone:{x:4,y:2}, win:{reach:true}, target:2, blocks:['flag','move1','repeat'],
+   hint1:'汪汪要走 7 格，可以用「重複 7 次」。', hint2:'重複 7 次 { 移動 1 格 }',
+   clue:{icon:'paw', name:'屋簷上的腳印', desc:'大街旁的屋簷上，有一排小小的貓腳印。'} },
+ { id:'2-2', name:'樓梯上的貓毛',
+   story:'一層一層的樓梯通往小鎮高處。每一階的走法都一樣，用「重複」最快！',
+   tip:'找出<b>一階</b>要怎麼走，把那幾塊積木放進「重複」裡。',
+   map:['#####G##','####..##','###..###','##..####','#..#####','..######'],
+   start:{x:0,y:5,dir:0}, bone:{x:3,y:2}, win:{reach:true}, target:5, blocks:['flag','move1','right','left','repeat'],
+   hint1:'一階＝往右 1 格、往上 1 格。往上之前要先轉向，走完再轉回來。',
+   hint2:'重複 5 次 { 移動1 → 向左轉 → 移動1 → 向右轉 }',
+   clue:{icon:'hair', name:'樓梯上的貓毛', desc:'樓梯每一階都黏著黑色貓毛。'} },
+ { id:'2-3', name:'迷路的郵差',
+   story:'郵差先生好像知道什麼！照著規律的路線走到郵差旁邊，用「說」問問他。',
+   tip:'先找出路線的<b>規律</b>：同樣的走法出現了兩次！',
+   map:['...#####','##.#####','##...###','####.###','####..##','########'],
+   start:{x:0,y:0,dir:0}, bone:{x:2,y:1},
+   npcs:[{id:'pm', kind:'postman', x:5, y:4, talk:'信是一隻黑貓叫我送的！寄到噴水池～'}],
+   win:{talk:'pm'}, target:6, blocks:['flag','move1','moveN','right','left','repeat','say'],
+   hint1:'「走 2 格、右轉、走 2 格、左轉」做兩次，就到郵差旁邊了。',
+   hint2:'重複 2 次 { 移動 2 格 → 向右轉 → 移動 2 格 → 向左轉 } → 說 你好',
+   clue:{icon:'talk', name:'郵差的證詞', desc:'「信是一隻黑貓叫我送的，寄到噴水池！」'} },
+ { id:'2-4', name:'繞著噴水池',
+   story:'噴水池四個角落各有一封信！繞噴水池一圈，把四封信都撿起來。',
+   tip:'繞一圈＝「走一邊、撿信、轉彎」做 4 次。',
+   map:['########','##....##','##.~~.##','##.~~.##','##....##','########'],
+   start:{x:2,y:1,dir:0}, bone:{x:3,y:1},
+   items:[{id:'l1',kind:'letter',x:5,y:1},{id:'l2',kind:'letter',x:5,y:4},{id:'l3',kind:'letter',x:2,y:4},{id:'l4',kind:'letter',x:2,y:1}],
+   win:{items:['l1','l2','l3','l4']}, target:4, blocks:B2,
+   hint1:'每一邊都是走 3 格，走完撿信，再向右轉。', hint2:'重複 4 次 { 移動 3 格 → 撿起 → 向右轉 }',
+   clue:{icon:'letter', name:'噴水池的信', desc:'四封信拼起來是一張紙條：「來追我呀～」'} },
+ { id:'2-5', name:'麵包店的香味',
+   story:'喵影偷了麵包店的小魚乾，一路掉在地上。撿起每一包小魚乾，再走進麵包店 🚩。',
+   tip:'小魚乾每隔 2 格就有一包，很有規律喔！',
+   map:['########','##.##.##','=======G','##.##.##','########','........'],
+   start:{x:0,y:2,dir:0}, bone:{x:5,y:2},
+   items:[{id:'f1',kind:'fish',x:2,y:2},{id:'f2',kind:'fish',x:4,y:2},{id:'f3',kind:'fish',x:6,y:2}],
+   win:{items:['f1','f2','f3'], reach:true}, target:4, blocks:B2,
+   hint1:'「走 2 格、撿起」重複 3 次，最後再走 1 格。', hint2:'重複 3 次 { 移動 2 格 → 撿起 } → 移動 1 格',
+   clue:{icon:'fish', name:'小魚乾', desc:'麵包店老闆說：黑貓最愛吃小魚乾麵包！'} },
+ { id:'2-6', name:'一排排的窗戶',
+   story:'窗台下排著兩組小魚乾，每組 3 包。試試把「重複」放進另一個「重複」裡！',
+   tip:'這叫做<b>巢狀重複</b>：重複裡面還有重複。沒有「移動 (N) 格」，要動動腦！',
+   map:['########','........','########','##.##.##','########','~~~~~~~~'],
+   start:{x:0,y:1,dir:0}, bone:{x:4,y:1},
+   items:[1,2,3,5,6,7].map((x,k) => ({id:'f'+k, kind:'fish', x, y:1})),
+   win:{items:['f0','f1','f2','f3','f4','f5']}, target:5, blocks:['flag','move1','right','left','repeat','pick'],
+   hint1:'一組＝「移動1、撿起」做 3 次；兩組中間要多走 1 格。',
+   hint2:'重複 2 次 { 重複 3 次 { 移動 1 格 → 撿起 } → 移動 1 格 }',
+   clue:{icon:'fish', name:'兩組小魚乾', desc:'小魚乾排得整整齊齊，喵影好像在留記號。'} },
+ { id:'2-7', name:'廣場的魚乾',
+   story:'廣場繞一圈，每一格都有小魚乾！全部撿起來。',
+   tip:'一邊是「移動1、撿起」做 3 次，一共有 4 邊。',
+   map:['########','##....##','##.**.##','##.**.##','##....##','########'],
+   start:{x:2,y:1,dir:0}, bone:{x:5,y:3},
+   items:[[3,1],[4,1],[5,1],[5,2],[5,3],[5,4],[4,4],[3,4],[2,4],[2,3],[2,2],[2,1]].map(([x,y],k) => ({id:'f'+k, kind:'fish', x, y})),
+   win:{items:[0,1,2,3,4,5,6,7,8,9,10,11].map(k => 'f'+k)}, target:5, blocks:['flag','move1','right','left','repeat','pick'],
+   hint1:'外面的重複做 4 次（4 個邊），裡面的重複做 3 次（每邊 3 格）。',
+   hint2:'重複 4 次 { 重複 3 次 { 移動 1 格 → 撿起 } → 向右轉 }',
+   clue:{icon:'route', name:'圓圈記號', desc:'廣場上的魚乾排成一個圈圈，像在畫地圖。'} },
+ { id:'2-8', name:'鐘塔樓梯',
+   story:'鐘塔的樓梯先往上、再往下。把問題<b>拆成兩半</b>，各用一個「重複」！',
+   tip:'上樓梯和下樓梯的走法不一樣，可以用兩個「重複」。',
+   map:['########','###..###','##....##','#..##..#','..####G#','########'],
+   start:{x:0,y:4,dir:0}, bone:{x:3,y:1}, win:{reach:true}, target:10, blocks:['flag','move1','right','left','repeat'],
+   hint1:'上樓：移動1、左轉、移動1、右轉；下樓：移動1、右轉、移動1、左轉。各做 3 次。',
+   hint2:'重複 3 次 { 移動1 → 向左轉 → 移動1 → 向右轉 } → 重複 3 次 { 移動1 → 向右轉 → 移動1 → 向左轉 }',
+   clue:{icon:'note', name:'鐘塔的鈴聲', desc:'鐘塔頂上傳來熟悉的鈴鐺聲。'} },
+ { id:'2-9', name:'找出程式錯誤',
+   story:'這段程式應該帶汪汪走下樓梯，可是一開始就出錯了！找出錯誤修好它。',
+   tip:'看清楚：樓梯是往<b>下</b>走的，而且一共有幾階？',
+   map:['..######','#..#####','##..####','###..###','####G###','########'],
+   start:{x:0,y:0,dir:0}, bone:{x:2,y:2}, win:{reach:true}, target:5, blocks:['flag','move1','right','left','repeat'],
+   preset:{dog:['flag; repeat 3 { move1; left; move1; right }']},
+   hint1:'有兩個錯：轉彎的方向相反了，重複的次數也不夠。',
+   hint2:'重複 4 次 { 移動1 → 向右轉 → 移動1 → 向左轉 }',
+   clue:{icon:'route', name:'修好的樓梯路線', desc:'修好的路線指向小鎮的屋頂。'} },
+ { id:'2-10', name:'屋頂追逐戰', boss:true,
+   story:'喵影在屋頂上跳來跳去！沿路撿起<b>信、小魚乾、毛線球</b>，最後走到 🚩。只能用 7 塊積木！',
+   tip:'屋頂是一階一階往下的，每一階的走法都一樣。',
+   map:['...#####','##...###','####...#','######.G','#######.','########'],
+   start:{x:0,y:0,dir:0}, bone:{x:5,y:2},
+   items:[{id:'a',kind:'letter',x:2,y:0},{id:'b',kind:'fish',x:4,y:1},{id:'c',kind:'yarn',x:6,y:2}],
+   npcs:[{id:'cat', kind:'cat', x:7, y:4, taunt:'來屋頂抓我呀～'}],
+   win:{items:['a','b','c'], reach:true}, target:7, blocks:B2,
+   hint1:'每一階：走 2 格 → 撿起 → 往下走 1 格。做 3 次以後再走 1 格。',
+   hint2:'重複 3 次 { 移動 2 格 → 撿起 → 向右轉 → 移動 1 格 → 向左轉 } → 移動 1 格',
+   clue:{icon:'mask', name:'面具的帶子', desc:'屋頂上掉了一段紫色面具帶子，上面寫著「海邊」。'} },
+
+ /* ---------------- 情境三 海邊：事件＋條件 ---------------- */
+ { id:'3-1', name:'自己來操控', keys:true,
+   story:'沙灘上，汪汪想自己跑跑看！這次用<b>鍵盤的方向鍵</b>操控汪汪走到 🚩。',
+   tip:'「當按下 → 右鍵」下面接「面向 右」和「移動 1 格」。按<b>開始操控</b>後，用方向鍵或下面的按鈕控制！',
+   map:['.....###','####.###','####.###','####.###','####G###','~~~~~~~~'],
+   start:{x:0,y:0,dir:0}, bone:{x:2,y:0}, win:{reach:true}, target:4, blocks:['key','face','move1'],
+   preset:{dog:['key right']},
+   hint1:'需要兩個事件：按右鍵往右走、按下鍵往下走。',
+   hint2:'當按下 → 右鍵：面向 右 → 移動 1 格；當按下 ↓ 下鍵：面向 下 → 移動 1 格',
+   clue:{icon:'wetpaw', name:'沙灘上的腳印', desc:'沙灘上的貓腳印被海浪沖掉了一半。'} },
+ { id:'3-2', name:'躲開螃蟹', keys:true,
+   story:'兩隻螃蟹在路上走來走去！看準時機按方向鍵，不要被夾到。',
+   tip:'螃蟹走到路<b>旁邊</b>的時候，就是衝過去的好機會！',
+   map:['###.#.##','###.#.##','.......G','###.#.##','###.#.##','~~~~~~~~'],
+   start:{x:0,y:2,dir:0}, bone:{x:4,y:2}, win:{reach:true}, target:2, blocks:['key','face','move1'],
+   movers:[{id:'c1', kind:'crab', path:[[3,0],[3,1],[3,2],[3,3],[3,4],[3,3],[3,2],[3,1]]},{id:'c2', kind:'crab', path:[[5,4],[5,3],[5,2],[5,1],[5,0],[5,1],[5,2],[5,3]]}],
+   preset:{dog:['key right']},
+   hint1:'只要一個事件就夠了：按右鍵往右走。重點是等螃蟹離開路面再走。',
+   hint2:'當按下 → 右鍵：面向 右 → 移動 1 格。螃蟹在上面或下面時再按。',
+   clue:{icon:'talk', name:'螃蟹的證詞', desc:'「喀喀！黑貓往貝殼灣跑了！」'} },
+ { id:'3-3', name:'很多按鍵', keys:true,
+   story:'用四個方向鍵走遍沙灘，再用<b>空白鍵</b>撿起兩個貝殼，最後到 🚩。',
+   tip:'一個「當按下」只管一個按鍵。想用空白鍵撿東西，就做一個「當按下 空白鍵」。',
+   map:['....#..G','.##.#.#.','........','.#.##.#.','........','..#..#..'],
+   start:{x:0,y:5,dir:3}, bone:{x:5,y:2},
+   items:[{id:'s1',kind:'shell',x:3,y:1},{id:'s2',kind:'shell',x:6,y:4}],
+   win:{items:['s1','s2'], reach:true}, target:9, blocks:['key','face','move1','pick'],
+   preset:{dog:['key right']},
+   hint1:'做 5 個事件：上、下、左、右各一個（面向＋移動），空白鍵用來撿起。',
+   hint2:'當按下 ↑：面向上、移動1；↓、←、→ 也一樣；當按下 空白鍵：撿起',
+   clue:{icon:'shell', name:'兩顆貝殼', desc:'貝殼內側都刮著一個貓爪記號。'} },
+ { id:'3-4', name:'前面有牆嗎？',
+   story:'海邊的礁石路彎來彎去。教汪汪自己判斷：<b>前面有障礙就轉彎</b>！',
+   tip:'把「前方有障礙？」拖進「如果 ___ 那麼」的<b>六角形空格</b>裡。',
+   map:['.......#','######.#','##G###.#','##.###.#','##.....#','########'],
+   start:{x:0,y:0,dir:0}, bone:{x:6,y:2}, win:{reach:true}, target:5,
+   blocks:['flag','move1','right','left','repeat','if','wall'],
+   hint1:'一直重複：「如果前方有障礙，就向右轉」，然後移動 1 格。',
+   hint2:'重複 20 次 { 如果〈前方有障礙？〉那麼 { 向右轉 } → 移動 1 格 }',
+   clue:{icon:'hair', name:'礁石上的貓毛', desc:'礁石縫裡夾著黑色貓毛。'} },
+ { id:'3-5', name:'撿貝殼',
+   story:'步道上散落著貝殼。教汪汪：<b>腳下有東西就撿起來</b>。',
+   tip:'「腳下有東西？」可以判斷汪汪站的這一格有沒有東西。',
+   map:['~~~~~~~~','........','=======G','........','.#..#..#','........'],
+   start:{x:0,y:2,dir:0}, bone:{x:4,y:2},
+   items:[2,3,5,6].map((x,k) => ({id:'s'+k, kind:'shell', x, y:2})),
+   win:{items:['s0','s1','s2','s3'], reach:true}, target:5,
+   blocks:['flag','move1','moveN','right','left','repeat','if','onItem','pick'],
+   hint1:'每走一格就檢查一次：腳下有東西嗎？有就撿起。',
+   hint2:'重複 7 次 { 移動 1 格 → 如果〈腳下有東西？〉那麼 { 撿起 } }',
+   clue:{icon:'shell', name:'貝殼項鍊', desc:'貝殼可以串成項鍊，喵影好像很喜歡亮晶晶的東西。'} },
+ { id:'3-6', name:'沙灘迷宮',
+   story:'沙灘迷宮繞了好大一圈，路上還有貝殼。把兩個「如果」組合起來！',
+   tip:'迴圈裡可以放<b>兩個</b>「如果」：一個管轉彎，一個管撿貝殼。',
+   map:['........','.######.','.##..G#.','.##.....','.#######','.#######'],
+   start:{x:0,y:5,dir:3}, bone:{x:5,y:3},
+   items:[[0,2],[4,0],[7,2],[4,3]].map(([x,y],k) => ({id:'s'+k, kind:'shell', x, y})),
+   win:{items:['s0','s1','s2','s3'], reach:true}, target:8,
+   blocks:['flag','move1','right','left','repeat','if','wall','onItem','pick'],
+   hint1:'重複很多次：有障礙就右轉 → 移動 1 格 → 腳下有東西就撿起。',
+   hint2:'重複 25 次 { 如果〈前方有障礙？〉那麼 { 向右轉 } → 移動 1 格 → 如果〈腳下有東西？〉那麼 { 撿起 } }',
+   clue:{icon:'route', name:'迷宮的出口', desc:'迷宮出口的沙子上畫著一個箭頭。'} },
+ { id:'3-7', name:'繞著潮池',
+   story:'沿著潮池邊走一圈。這次用<b>「如果…那麼…否則」</b>：有障礙就左轉，<b>否則</b>就往前走。',
+   tip:'「否則」下面的積木，只有在條件<b>不成立</b>的時候才會做。',
+   map:['.~~~~~~#','.~~~~~~G','.~~~~~~.','.~~~~~~.','.~~~~~~.','........'],
+   start:{x:0,y:0,dir:1}, bone:{x:4,y:5}, win:{reach:true}, target:5,
+   blocks:['flag','move1','right','left','repeat','ifelse','wall'],
+   hint1:'每一次只做一件事：要嘛轉彎，要嘛前進。',
+   hint2:'重複 20 次 { 如果〈前方有障礙？〉那麼 { 向左轉 } 否則 { 移動 1 格 } }',
+   clue:{icon:'wetpaw', name:'潮池的倒影', desc:'潮池裡映出戴面具的黑貓影子！'} },
+ { id:'3-8', name:'漲潮了',
+   story:'漲潮了，只能走在彩色地墊上！<b>紅色</b>地墊要向右轉，<b>藍色</b>地墊要向左轉。',
+   tip:'「腳下是 紅色？」可以判斷地板的顏色。點一下可以換顏色。',
+   map:['...r####','###.####','###b.r##','#####.##','#####b.G','~~~~~~~~'],
+   start:{x:0,y:0,dir:0}, bone:{x:4,y:2}, win:{reach:true}, target:8,
+   blocks:['flag','move1','right','left','repeat','if','color'],
+   hint1:'每走一格就看看腳下：紅色右轉、藍色左轉。',
+   hint2:'重複 11 次 { 移動 1 格 → 如果〈腳下是 紅色？〉那麼 { 向右轉 } → 如果〈腳下是 藍色？〉那麼 { 向左轉 } }',
+   clue:{icon:'map', name:'地墊的祕密', desc:'紅藍地墊排成的路線，是喵影設計的！'} },
+ { id:'3-9', name:'找出程式錯誤',
+   story:'這段程式應該讓汪汪自己沿著礁石走到 🚩，可是汪汪一下子就走出地圖了！',
+   tip:'先執行一次，看看汪汪碰到障礙時轉向哪裡。',
+   map:['########','##.....#','##.###.#','##G###.#','######.#','.......#'],
+   start:{x:0,y:5,dir:0}, bone:{x:6,y:3}, win:{reach:true}, target:5,
+   blocks:['flag','move1','right','left','repeat','if','wall'],
+   preset:{dog:['flag; repeat 20 { if <wall> { right }; move1 }']},
+   hint1:'這條路一直往左邊彎，轉彎的方向寫錯了。', hint2:'把「向右轉」換成「向左轉」。',
+   clue:{icon:'route', name:'修好的路線', desc:'沿著礁石走，可以看到喵影的小船！'} },
+ { id:'3-10', name:'浪花大作戰', boss:true,
+   story:'喵影出了三張不同的地圖！寫<b>一段程式</b>，三張地圖都要撿完貝殼並走到 🚩。',
+   tip:'同一段程式要跑三張地圖，所以不能死背路線，要用<b>「如果」</b>來判斷！',
+   variants:[
+     {map:['########','########','...r####','###.####','###b..G#','########'], start:{x:0,y:2,dir:0},
+      items:[{id:'s1',kind:'shell',x:1,y:2},{id:'s2',kind:'shell',x:4,y:4}]},
+     {map:['##r.r###','##.#.###','..b#.###','####.###','####b.G#','########'], start:{x:0,y:2,dir:0}, bone:{x:3,y:0},
+      items:[{id:'s1',kind:'shell',x:2,y:1},{id:'s2',kind:'shell',x:4,y:3}]},
+     {map:['########','########','.....r##','#####.##','##G..r##','########'], start:{x:0,y:2,dir:0},
+      items:[{id:'s1',kind:'shell',x:2,y:2},{id:'s2',kind:'shell',x:5,y:3},{id:'s3',kind:'shell',x:3,y:4}],
+      npcs:[{id:'cat', kind:'cat', x:1, y:4, taunt:'三張地圖都過得了嗎？喵～'}]},
+   ],
+   win:{allItems:true, reach:true}, target:11,
+   blocks:['flag','move1','right','left','repeat','if','color','onItem','pick'],
+   hint1:'每走一格：腳下有東西就撿；紅色就右轉；藍色就左轉。',
+   hint2:'重複 20 次 { 移動 1 格 → 如果〈腳下有東西？〉{ 撿起 } → 如果〈紅色？〉{ 向右轉 } → 如果〈藍色？〉{ 向左轉 } }',
+   clue:{icon:'map', name:'河口的地圖', desc:'喵影划著小船，往森林的河口去了。'} },
+
+ /* ---------------- 情境四 森林：變數＋偵測 ---------------- */
+ { id:'4-1', name:'數數骨頭',
+   story:'森林裡有好多骨頭！每撿一根，就用<b>變數「骨頭」</b>記下來。到 🚩 時，變數要剛好等於骨頭數。',
+   tip:'變數就像一個會記數字的盒子。「把 骨頭 改變 1」＝骨頭的數字加 1。右上角會顯示變數的值。',
+   map:[FOREST_ROWS[0],FOREST_ROWS[1],'=======G',FOREST_ROWS[2],FOREST_ROWS[3],'~~~~~~~~'],
+   start:{x:0,y:2,dir:0}, bone:{x:4,y:2}, vars:['骨頭'], varInit:{'骨頭':0},
+   items:[2,3,5,6].map((x,k) => ({id:'b'+k, kind:'bone2', x, y:2})),
+   win:{allItems:true, reach:true, varCount:{v:'骨頭', kind:'bone2'}}, target:6,
+   blocks:['flag','move1','moveN','repeat','if','onItem','pick','chgVar'],
+   hint1:'腳下有東西時，要做兩件事：撿起，然後把骨頭加 1。',
+   hint2:'重複 7 次 { 移動 1 格 → 如果〈腳下有東西？〉那麼 { 撿起 → 把 骨頭 改變 1 } }',
+   clue:{icon:'bone2', name:'骨頭計數表', desc:'汪汪學會用變數記數了！地上的骨頭被貓咬過。'} },
+ { id:'4-2', name:'剛好 5 根',
+   story:'糟糕，變數「骨頭」一開始就是 3！先把它<b>歸零</b>，再撿 5 根骨頭。',
+   tip:'「把 骨頭 設為 0」可以讓變數變回 0。要放在程式的<b>最前面</b>。',
+   map:[FOREST_ROWS[1],FOREST_ROWS[0],FOREST_ROWS[2],'=======G',FOREST_ROWS[3],'~~~~~~~~'],
+   start:{x:0,y:3,dir:0}, bone:{x:5,y:3}, vars:['骨頭'], varInit:{'骨頭':3},
+   items:[1,2,4,6,7].map((x,k) => ({id:'b'+k, kind:'bone2', x, y:3})),
+   win:{allItems:true, reach:true, varCount:{v:'骨頭', kind:'bone2'}}, target:7,
+   blocks:['flag','move1','moveN','repeat','if','onItem','pick','setVar','chgVar'],
+   hint1:'先「把 骨頭 設為 0」，其他和上一關一樣。',
+   hint2:'把 骨頭 設為 0 → 重複 7 次 { 移動 1 格 → 如果〈腳下有東西？〉那麼 { 撿起 → 把 骨頭 改變 1 } }',
+   clue:{icon:'bone2', name:'剛好五根', desc:'五根骨頭排成一個箭頭，指向森林深處。'} },
+ { id:'4-3', name:'夠了就停',
+   story:'松鼠說：骨頭只能拿 <b>3 根</b>，其他要留給牠們！撿到 3 根就不要再撿了。',
+   tip:'「骨頭 &lt; 3」可以比較變數的大小。把「如果」放進另一個「如果」裡！',
+   map:[FOREST_ROWS[0],FOREST_ROWS[1],'=======G',FOREST_ROWS[2],FOREST_ROWS[3],'~~~~~~~~'],
+   start:{x:0,y:2,dir:0}, bone:{x:7,y:2}, vars:['骨頭'], varInit:{'骨頭':0},
+   items:[1,2,3,4,5,6].map((x,k) => ({id:'b'+k, kind:'bone2', x, y:2})),
+   win:{reach:true, varEq:{v:'骨頭', n:3}, bagExact:{kind:'bone2', n:3}}, target:8,
+   blocks:['flag','move1','repeat','if','onItem','pick','chgVar','cmp'],
+   hint1:'腳下有骨頭時，再檢查一次：骨頭還不到 3 根，才撿起來。',
+   hint2:'重複 7 次 { 移動1 → 如果〈腳下有東西？〉{ 如果〈骨頭 < 3〉{ 撿起 → 把 骨頭 改變 1 } } }',
+   clue:{icon:'talk', name:'松鼠的感謝', desc:'「謝謝你留骨頭給我們！黑貓剛剛從這裡經過。」'} },
+ { id:'4-4', name:'計步器',
+   story:'汪汪想知道自己走了幾步。讓汪汪自己沿著森林小路走到 🚩，並用變數「步數」數每一步。',
+   tip:'每<b>移動</b>一格，步數就加 1。轉彎不算步數喔！',
+   map:['#.......','#.######','#.###G##','#.###.##','#.....##','########'],
+   start:{x:7,y:0,dir:2}, bone:{x:1,y:2}, vars:['步數'], varInit:{'步數':0},
+   win:{reach:true, varEq:{v:'步數', n:16}}, target:6,
+   blocks:['flag','move1','right','left','repeat','if','wall','setVar','chgVar'],
+   hint1:'這條路一直往左彎。移動完馬上把步數加 1。',
+   hint2:'重複 20 次 { 如果〈前方有障礙？〉{ 向左轉 } → 移動 1 格 → 把 步數 改變 1 }',
+   clue:{icon:'route', name:'步數紀錄', desc:'走了 16 步，在樹根旁發現喵影的帽子羽毛。'} },
+ { id:'4-5', name:'藍莓和毒菇',
+   story:'<b>藍色</b>地板上長著藍莓，<b>紅色</b>地板上是毒菇！只撿藍莓，並用變數「藍莓」數數。',
+   tip:'不能只用「腳下有東西？」，那樣會撿到毒菇！改用「腳下是 藍色？」。',
+   map:[FOREST_ROWS[0],FOREST_ROWS[1],'=br=brbG',FOREST_ROWS[2],FOREST_ROWS[3],'~~~~~~~~'],
+   start:{x:0,y:2,dir:0}, bone:{x:3,y:2}, vars:['藍莓'], varInit:{'藍莓':0},
+   items:[{id:'e1',kind:'berry',x:1,y:2},{id:'m1',kind:'mushroom',x:2,y:2},{id:'e2',kind:'berry',x:4,y:2},{id:'m2',kind:'mushroom',x:5,y:2},{id:'e3',kind:'berry',x:6,y:2}],
+   win:{items:['e1','e2','e3'], reach:true, varCount:{v:'藍莓', kind:'berry'}}, target:6,
+   blocks:['flag','move1','repeat','if','onItem','color','pick','chgVar'],
+   hint1:'每走一格：如果腳下是藍色，就撿起並把藍莓加 1。',
+   hint2:'重複 7 次 { 移動 1 格 → 如果〈腳下是 藍色？〉{ 撿起 → 把 藍莓 改變 1 } }',
+   clue:{icon:'berry', name:'被咬過的藍莓', desc:'藍莓上有小小的貓牙印。'} },
+ { id:'4-6', name:'兩個口袋',
+   story:'這次有兩個變數！<b>藍色</b>地板是藍莓、<b>黃色</b>地板是松果，分別數清楚。紅色的毒菇不要撿！',
+   tip:'一個變數記一種東西。兩個「如果」各管一種顏色。',
+   map:[FOREST_ROWS[0],FOREST_ROWS[1],'=yb=yrbG',FOREST_ROWS[2],FOREST_ROWS[3],'~~~~~~~~'],
+   start:{x:0,y:2,dir:0}, bone:{x:3,y:2}, vars:['藍莓','松果'], varInit:{'藍莓':0,'松果':0},
+   items:[{id:'a1',kind:'acorn',x:1,y:2},{id:'e1',kind:'berry',x:2,y:2},{id:'a2',kind:'acorn',x:4,y:2},{id:'m1',kind:'mushroom',x:5,y:2},{id:'e2',kind:'berry',x:6,y:2}],
+   win:{items:['a1','a2','e1','e2'], reach:true, varCount:{v:'藍莓', kind:'berry'}, varCount2:{v:'松果', kind:'acorn'}}, target:10,
+   blocks:['flag','move1','repeat','if','color','pick','chgVar'],
+   hint1:'藍色：撿起、藍莓加 1；黃色：撿起、松果加 1。',
+   hint2:'重複 7 次 { 移動1 → 如果〈藍色？〉{ 撿起 → 藍莓 改變 1 } → 如果〈黃色？〉{ 撿起 → 松果 改變 1 } }',
+   clue:{icon:'acorn', name:'兩個口袋', desc:'口袋裡的松果，有一顆刻著城堡的圖案。'} },
+ { id:'4-7', name:'分岔路',
+   story:'路的盡頭有分岔：撿到的骨頭<b>大於 2 根</b>就往上走，<b>否則</b>往下走。兩張地圖都要過關！',
+   tip:'兩張地圖的骨頭數量不一樣，所以要用變數來決定往哪邊走。',
+   variants:[
+     {map:['#####G##','#####.##','=====.##','#####.##','#####.##','########'], start:{x:0,y:2,dir:0},
+      items:[1,2,3].map((x,k) => ({id:'b'+k, kind:'bone2', x, y:2}))},
+     {map:['#####.##','#####.##','=====.##','#####.##','#####G##','########'], start:{x:0,y:2,dir:0}, bone:{x:4,y:2},
+      items:[1,3].map((x,k) => ({id:'b'+k, kind:'bone2', x, y:2}))},
+   ],
+   vars:['骨頭'], varInit:{'骨頭':0}, win:{reach:true}, target:11,
+   blocks:['flag','move1','moveN','right','left','repeat','if','ifelse','onItem','pick','chgVar','cmp'],
+   hint1:'先走 5 格並數骨頭。到分岔路口時：骨頭 > 2 就左轉（往上），否則右轉（往下），再走 2 格。',
+   hint2:'重複 5 次 { 移動1 → 如果〈腳下有東西？〉{ 撿起 → 骨頭 改變 1 } } → 如果〈骨頭 > 2〉{ 向左轉 } 否則 { 向右轉 } → 移動 2 格',
+   clue:{icon:'map', name:'正確的岔路', desc:'選對了路，前方看得到城堡的尖塔！'} },
+ { id:'4-8', name:'貓頭鷹的謎題',
+   story:'貓頭鷹問：「你一路上撿了幾顆松果？」撿松果、數清楚，再走到貓頭鷹旁邊<b>說出數字</b>。',
+   tip:'「說出 松果 的數字」會讓汪汪把變數的值說出來。',
+   map:[FOREST_ROWS[0],FOREST_ROWS[1],'=======.',FOREST_ROWS[2],FOREST_ROWS[3],'~~~~~~~~'],
+   start:{x:0,y:2,dir:0}, bone:{x:3,y:2}, vars:['松果'], varInit:{'松果':0},
+   items:[1,2,4,5].map((x,k) => ({id:'a'+k, kind:'acorn', x, y:2})),
+   npcs:[{id:'owl', kind:'owl', x:7, y:2, answer:'4', talk:'答對了！喵影往城堡的方向去了，咕～', wrong:'咕？數字不對喔，再數數看！'}],
+   win:{talk:'owl'}, target:7,
+   blocks:['flag','move1','repeat','if','onItem','pick','chgVar','sayVar'],
+   hint1:'先一邊走一邊數松果（走 6 格），最後說出松果的數字。',
+   hint2:'重複 6 次 { 移動1 → 如果〈腳下有東西？〉{ 撿起 → 松果 改變 1 } } → 說出 松果 的數字',
+   clue:{icon:'talk', name:'貓頭鷹的答案', desc:'「喵影往城堡的方向去了。」'} },
+ { id:'4-9', name:'找出程式錯誤',
+   story:'這段程式要數 3 根骨頭，可是變數最後總是不對！找出錯誤修好它。',
+   tip:'看看右上角：程式開始前，「骨頭」本來就是幾？每撿一根又加了多少？',
+   map:[FOREST_ROWS[0],FOREST_ROWS[1],'=======G',FOREST_ROWS[2],FOREST_ROWS[3],'~~~~~~~~'],
+   start:{x:0,y:2,dir:0}, bone:{x:6,y:2}, vars:['骨頭'], varInit:{'骨頭':5},
+   items:[2,4,5].map((x,k) => ({id:'b'+k, kind:'bone2', x, y:2})),
+   win:{allItems:true, reach:true, varCount:{v:'骨頭', kind:'bone2'}}, target:7,
+   blocks:['flag','move1','repeat','if','onItem','pick','setVar','chgVar'],
+   preset:{dog:['flag; repeat 7 { move1; if <onItem> { pick; chgVar 骨頭 2 } }']},
+   hint1:'有兩個錯：變數沒有先歸零；每次加的數字也不對。',
+   hint2:'最前面加「把 骨頭 設為 0」，並把「改變 2」改成「改變 1」。',
+   clue:{icon:'route', name:'修好的計數器', desc:'數對了！三根骨頭指向森林出口。'} },
+ { id:'4-10', name:'逃出森林', boss:true,
+   story:'天快黑了！讓汪汪自己沿路走出森林，撿起所有骨頭並數清楚。兩張地圖都要過關！',
+   tip:'把「轉彎」、「移動」、「撿骨頭＋數數」通通放進一個大迴圈。',
+   variants:[
+     {map:['........','.######.','.##..G#.','.##.....','.#######','.#######'], start:{x:0,y:5,dir:3}, bone:{x:5,y:3},
+      items:[[0,2],[4,0],[7,2],[4,3]].map(([x,y],k) => ({id:'b'+k, kind:'bone2', x, y}))},
+     {map:['.......#','######.#','##G###.#','##.###.#','##.....#','########'], start:{x:0,y:0,dir:0},
+      items:[[3,0],[6,2],[4,4]].map(([x,y],k) => ({id:'b'+k, kind:'bone2', x, y})),
+      npcs:[{id:'cat', kind:'cat', x:3, y:2, taunt:'城堡見啦～喵！'}]},
+   ],
+   vars:['骨頭'], varInit:{'骨頭':0},
+   win:{allItems:true, reach:true, varCount:{v:'骨頭', kind:'bone2'}}, target:9,
+   blocks:['flag','move1','right','left','repeat','if','wall','onItem','pick','setVar','chgVar'],
+   hint1:'這兩張地圖都是遇到障礙就向右轉。',
+   hint2:'重複 30 次 { 如果〈前方有障礙？〉{ 向右轉 } → 移動1 → 如果〈腳下有東西？〉{ 撿起 → 骨頭 改變 1 } }',
+   clue:{icon:'mask', name:'森林出口的旗子', desc:'森林出口插著喵影的旗子：「城堡見！」'} },
+
+ /* ---------------- 情境五 城堡：綜合 ---------------- */
+ { id:'5-1', name:'走到門口為止',
+   story:'城堡走廊有長有短。用<b>「重複直到」</b>：一直走，<b>直到</b>到達 🚩 為止。兩張地圖都要過關！',
+   tip:'「重複直到〈到達🚩了？〉」會一直重複，條件成立就停下來。',
+   variants:[
+     {map:['########','########','=====G##','########','########','########'], start:{x:0,y:2,dir:0}},
+     {map:['########','########','=======G','########','########','########'], start:{x:0,y:2,dir:0}, bone:{x:6,y:2}},
+   ],
+   win:{reach:true}, target:3, blocks:['flag','move1','moveN','repeat','until','atGoal'],
+   hint1:'兩條走廊長度不一樣，所以不能用固定的次數。',
+   hint2:'重複直到〈到達🚩了？〉{ 移動 1 格 }',
+   clue:{icon:'paw', name:'城堡大門的爪痕', desc:'城堡大門上有新鮮的貓爪抓痕。'} },
+ { id:'5-2', name:'巡邏的路線',
+   story:'城堡的巡邏路線繞了一大圈。用<b>「不停重複」</b>讓汪汪一直走，到 🚩 就會自動停下。',
+   tip:'「不停重複」會永遠做下去，但只要破案，程式就會停止。',
+   map:['........','#######.','......#.','.####G#.','.######.','........'],
+   start:{x:0,y:0,dir:0}, bone:{x:3,y:5}, win:{reach:true}, target:5,
+   blocks:['flag','move1','right','left','repeat','forever','if','wall'],
+   hint1:'這條路都是遇到障礙就向右轉。', hint2:'不停重複 { 如果〈前方有障礙？〉{ 向右轉 } → 移動 1 格 }',
+   clue:{icon:'route', name:'巡邏路線', desc:'巡邏路線圖上，有一間房間被圈起來。'} },
+ { id:'5-3', name:'機關地板',
+   story:'城堡的機關地板：<b>紅色</b>向右轉、<b>藍色</b>向左轉。用「重複直到」走到 🚩，兩張地圖都要過！',
+   tip:'把 3-8 學過的顏色判斷，放進「重複直到」裡。',
+   variants:[
+     {map:['...r####','###.####','###b.r##','#####.##','#####b.G','########'], start:{x:0,y:0,dir:0}, bone:{x:4,y:2}},
+     {map:['.r######','#.#r..r#','#.#.##.#','#b.b##.#','######G#','########'], start:{x:0,y:0,dir:0}},
+   ],
+   win:{reach:true}, target:9, blocks:['flag','move1','right','left','repeat','until','atGoal','if','color'],
+   hint1:'重複直到到達：移動 1 格 → 紅色右轉 → 藍色左轉。',
+   hint2:'重複直到〈到達🚩了？〉{ 移動1 → 如果〈紅色？〉{ 向右轉 } → 如果〈藍色？〉{ 向左轉 } }',
+   clue:{icon:'map', name:'機關的祕密', desc:'地板機關的設計圖上，簽著「喵影」。'} },
+ { id:'5-4', name:'傳暗號', actors:true,
+   story:'新夥伴<b>小麻雀啾啾</b>來幫忙了！啾啾會飛，可以飛去踩<b>開關</b>打開門。門開了以後，用<b>「廣播」</b>通知汪汪出發！',
+   tip:'上面的分頁可以切換「汪汪」和「啾啾」的程式。啾啾踩在開關上，門才會打開。',
+   map:['....#...','....#...','....X..G','....#...','....#...','....#..K'],
+   start:{x:0,y:2,dir:0}, start2:{x:0,y:5,dir:0}, bone:{x:6,y:2}, msgs:['開門','出發'],
+   win:{reach:true}, target:3, blocks:['flag','recv','bcast','move1','moveN','right','left'],
+   hint1:'啾啾：飛到開關上，然後廣播。汪汪：收到廣播再出發。',
+   hint2:'啾啾：當🚩被點擊 → 移動 7 格 → 廣播 開門。汪汪：當收到 開門 → 移動 7 格',
+   clue:{icon:'talk', name:'啾啾的暗號', desc:'啾啾說：「我會幫你按開關，一起抓喵影！」'} },
+ { id:'5-5', name:'開門的順序', actors:true,
+   story:'有兩道門！<b>啾啾站在開關上，門才會開</b>，一離開門就關。兩個人要用廣播互相通知！',
+   tip:'順序很重要：門1開 → 汪汪通過 → 告訴啾啾 → 啾啾去開門2 → 汪汪再出發。',
+   map:['#####J##','########','..X..Y.G','########','########','##K#####'],
+   start:{x:0,y:2,dir:0}, start2:{x:0,y:5,dir:0}, bone:{x:6,y:2}, msgs:['門1開了','我過了','門2開了'],
+   win:{reach:true}, target:10, blocks:['flag','recv','bcast','move1','moveN','right','left'],
+   hint1:'汪汪過了門1以後，要廣播「我過了」，啾啾收到才去門2的開關。',
+   hint2:'啾啾：🚩→移動2→廣播 門1開了；收到 我過了→左轉→移動5→右轉→移動3→廣播 門2開了。汪汪：收到 門1開了→移動3→廣播 我過了；收到 門2開了→移動4',
+   clue:{icon:'key', name:'兩道門', desc:'兩道門後面，傳來喵影哼歌的聲音。'} },
+ { id:'5-6', name:'啾啾來幫忙', actors:true,
+   story:'鑰匙在高高的牆後面，只有啾啾飛得過去！讓啾啾把鑰匙送到路上，汪汪再撿起鑰匙走到 🚩。',
+   tip:'啾啾放下鑰匙以後再廣播，汪汪收到才出發，不然會撲空喔。',
+   map:['####.###','########','=======G','########','########','####.###'],
+   start:{x:0,y:2,dir:0}, start2:{x:4,y:5,dir:3}, bone:{x:2,y:2}, msgs:['鑰匙來了'],
+   items:[{id:'key',kind:'key',x:4,y:0}],
+   win:{reach:true, dogHas:['key']}, target:10, blocks:['flag','recv','bcast','move1','moveN','right','left','pick','drop'],
+   hint1:'啾啾：往上飛 5 格撿鑰匙 → 向後轉 → 飛 2 格 → 放下 → 廣播。',
+   hint2:'啾啾：🚩→移動5→撿起→右轉→右轉→移動2→放下→廣播。汪汪：收到 鑰匙來了→移動4→撿起→移動3',
+   clue:{icon:'key', name:'城堡鑰匙', desc:'鑰匙上掛著一個小牌子：「寶物房」。'} },
+ { id:'5-7', name:'分頭行動', actors:true,
+   story:'汪汪撿地上的骨頭，啾啾撿牆上的羽毛，兩個人<b>同時</b>出發！全部撿完，汪汪再走到 🚩。',
+   tip:'兩個角色都有「當🚩被點擊」，按下綠旗時會<b>同時</b>開始。',
+   map:['........','########','=======G','########','########','########'],
+   start:{x:0,y:2,dir:0}, start2:{x:0,y:0,dir:0}, bone:{x:1,y:2},
+   items:[{id:'f1',kind:'feather',x:2,y:0},{id:'f2',kind:'feather',x:5,y:0},{id:'b1',kind:'bone2',x:3,y:2},{id:'b2',kind:'bone2',x:6,y:2}],
+   win:{allItems:true, reach:true}, target:10, blocks:['flag','move1','moveN','repeat','until','atGoal','if','onItem','pick'],
+   hint1:'兩個角色可以用一樣的程式：一直走，腳下有東西就撿。',
+   hint2:'汪汪和啾啾都寫：🚩 → 重複 7 次 { 移動1 → 如果〈腳下有東西？〉{ 撿起 } }',
+   clue:{icon:'feather', name:'分頭找到的線索', desc:'羽毛和骨頭排在一起，是一個「寶」字！'} },
+ { id:'5-8', name:'寶物房', actors:true,
+   story:'寶物房的門要用 3 顆寶石才打得開！汪汪撿寶石、用變數數好，數到 3 就廣播；啾啾收到就去踩開關，門開了再通知汪汪。',
+   tip:'「如果〈寶石 = 3〉那麼 廣播」——條件成立才發出暗號。',
+   map:['########','########','=====X=G','########','########','#####K##'],
+   start:{x:0,y:2,dir:0}, start2:{x:2,y:5,dir:0}, bone:{x:3,y:2}, vars:['寶石'], varInit:{'寶石':0}, msgs:['開寶箱','門開了'],
+   items:[1,2,4].map((x,k) => ({id:'g'+k, kind:'gem', x, y:2})),
+   win:{reach:true, varEq:{v:'寶石', n:3}}, target:12,
+   blocks:['flag','recv','bcast','move1','moveN','right','left','repeat','if','onItem','pick','chgVar','cmp'],
+   hint1:'汪汪：走 4 格撿寶石並數數 → 如果寶石 = 3 就廣播「開寶箱」。啾啾收到後飛到開關，再廣播「門開了」。',
+   hint2:'汪汪：🚩→重複4次{移動1→如果〈腳下有東西？〉{撿起→寶石改變1}}→如果〈寶石=3〉{廣播 開寶箱}；收到 門開了→移動3。啾啾：收到 開寶箱→移動3→廣播 門開了',
+   clue:{icon:'gem', name:'三顆寶石', desc:'寶石的光照出城堡塔頂的影子——喵影就在上面！'} },
+ { id:'5-9', name:'找出程式錯誤', actors:true,
+   story:'啾啾和汪汪的暗號對不起來，汪汪一直不出發！找出兩個錯誤修好它。',
+   tip:'廣播的訊息和「當收到」的訊息要<b>一模一樣</b>才收得到。',
+   map:['....#...','....#...','....X..G','....#...','....#...','....#..K'],
+   start:{x:0,y:2,dir:0}, start2:{x:0,y:5,dir:0}, bone:{x:6,y:2}, msgs:['開門','出發'],
+   win:{reach:true}, target:3, blocks:['flag','recv','bcast','move1','moveN','right','left'],
+   preset:{dog:['recv 開門; moveN 6'], bird:['flag; moveN 7; bcast 出發']},
+   hint1:'看看啾啾廣播的是什麼？汪汪等的又是什麼？還有，汪汪走的格數夠嗎？',
+   hint2:'啾啾要廣播「開門」；汪汪要移動 7 格。',
+   clue:{icon:'route', name:'修好的暗號', desc:'暗號對上了，塔頂的門縫透出光來。'} },
+ { id:'5-10', name:'拿回徽章', boss:true, actors:true,
+   story:'最後的案件！汪汪撿到 <b>3 顆寶石</b>就廣播；啾啾去踩開關打開塔門；汪汪再自己走到塔頂，<b>撿起偵探徽章</b>！',
+   tip:'用「重複直到〈寶石 = 3〉」撿寶石，用「重複直到〈到達🚩了？〉」走到塔頂。',
+   map:['########','########','=====X=.','#######.','#######G','#####K##'],
+   start:{x:0,y:2,dir:0}, start2:{x:2,y:5,dir:0}, bone:{x:6,y:2}, vars:['寶石'], varInit:{'寶石':0}, msgs:['開門','門開了'],
+   items:[{id:'g1',kind:'gem',x:1,y:2},{id:'g2',kind:'gem',x:3,y:2},{id:'g3',kind:'gem',x:4,y:2},{id:'badge',kind:'badge',x:7,y:4}],
+   npcs:[{id:'cat', kind:'cat', x:6, y:4, taunt:'你真的追到這裡來了！？'}],
+   win:{dogHas:['badge']}, target:17,
+   blocks:['flag','recv','bcast','move1','moveN','right','left','repeat','forever','until','atGoal','if','wall','onItem','pick','chgVar','cmp'],
+   hint1:'汪汪分兩段：先撿寶石到 3 顆再廣播；收到「門開了」以後，遇到障礙就右轉，直到到達再撿起徽章。',
+   hint2:'汪汪：🚩→重複直到〈寶石=3〉{移動1→如果〈腳下有東西？〉{撿起→寶石改變1}}→廣播 開門；收到 門開了→重複直到〈到達？〉{如果〈前方有障礙？〉{右轉}→移動1}→撿起。啾啾：收到 開門→移動3→廣播 門開了',
+   clue:{icon:'badge', name:'偵探徽章', desc:'汪汪終於拿回了最寶貝的偵探徽章！'} },
+];
+LEVELS.forEach(L => { L.scene = +L.id.split('-')[0]; L.no = +L.id.split('-')[1]; });
+const sceneOf = L => SCENES[L.scene - 1];
+function geo(L, vi){
+  const v = L.variants ? L.variants[vi || 0] : L;
+  const g = { map:v.map, start:v.start, start2:v.start2 || L.start2, items:v.items || L.items || [], bone:v.bone || null,
+              npcs:v.npcs || L.npcs || [], movers:v.movers || L.movers || [], goal:null, dropAt:null };
+  if (L.variants && L.items && !v.items) g.items = L.items;
+  g.map.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === 'G') g.goal = {x,y}; if (ch === 'D') g.dropAt = {x,y}; }));
+  return g;
+}
+
+/* =========================================================
+   存檔與帳號
+   ========================================================= */
+let ACC = null; // {cls, seat, pw, name, open, cloud:true} 或 {guest:true}
+function saveKey(){ return SAVE_PREFIX + (ACC && !ACC.guest ? ACC.cls + '-' + ACC.seat : 'guest'); }
+function loadSave(){
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(saveKey())); } catch(e) {}
+  s = s || {};
+  s.progress = s.progress || {}; s.scripts = s.scripts || {}; s.seen = s.seen || {}; s.pending = s.pending || [];
+  if (!s.speed) s.speed = 'mid';
+  if (s.sound === undefined) s.sound = true;
+  return s;
+}
+function writeSave(){ try { localStorage.setItem(saveKey(), JSON.stringify(S.save)); } catch(e) {} }
+
+const S = { save:null, li:0, sc:{dog:[]}, cur:'dog', running:false, token:0, st:null, vi:0, hintUsed:false, gotBoneAny:false };
+const curL = () => LEVELS[S.li];
+const curG = () => S.g;
+const totalStars = () => Object.values(S.save.progress).reduce((a,p) => a + (p.stars||0), 0);
+function rankName(n){
+  if (n >= 130) return '🏅 名偵探';
+  if (n >= 90)  return '🎖️ 高級偵探';
+  if (n >= 50)  return '⭐ 中級偵探';
+  if (n >= 15)  return '🔍 初級偵探';
+  return '🐾 見習偵探';
+}
+function sceneLock(n){
+  if (n > 1 && !S.save.progress[(n-1) + '-10']) return `要先破完情境${n-1}「${SCENES[n-2].name}」的關主案件喔！`;
+  if (ACC && ACC.cloud && n > (ACC.open || 1)) return '老師還沒有開放這個情境，請等老師開放。';
+  return '';
+}
+function levelOpen(i){
+  const L = LEVELS[i];
+  if (sceneLock(L.scene)) return false;
+  return L.no === 1 || !!S.save.progress[LEVELS[i-1].id];
+}
+
+/* ---------- 雲端 ---------- */
+async function api(body){
+  const r = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)});
+  return r.json();
+}
+let flushing = false, flushTimer = null;
+function setCloud(st){
+  const el = $('mCloud'); if (!el) return;
+  if (!ACC || !ACC.cloud){ el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.textContent = {ok:'☁️ 已存檔', wait:'☁️ 存檔中…', err:'⚠️ 稍後重試'}[st];
+  el.title = st === 'err' ? '連不上網路，進度先存在這台電腦，等一下會自動再上傳。' : '';
+}
+async function flushCloud(){
+  if (!ACC || !ACC.cloud || flushing || !S.save.pending.length) return;
+  flushing = true; setCloud('wait');
+  const recs = S.save.pending.slice();
+  try {
+    const r = await api({action:'save', cls:ACC.cls, seat:ACC.seat, pw:ACC.pw, recs});
+    if (!r.ok) throw new Error(r.msg);
+    S.save.pending = S.save.pending.slice(recs.length); writeSave(); setCloud('ok');
+  } catch(e){
+    setCloud('err'); clearTimeout(flushTimer); flushTimer = setTimeout(flushCloud, 10000 + Math.random()*5000);
+  } finally { flushing = false; }
+  if (S.save.pending.length && !flushTimer) flushTimer = setTimeout(flushCloud, 1500);
+}
+
+/* =========================================================
+   音效（WebAudio 合成，不需要音檔）
+   ========================================================= */
+let actx = null;
+function tone(freq, t0, dur, type='sine', vol=.12){
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, actx.currentTime + t0);
+  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + t0 + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(actx.currentTime + t0); o.stop(actx.currentTime + t0 + dur + .02);
+}
+function sfx(k){
+  if (!S.save || !S.save.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (k === 'step') tone(520, 0, .06, 'triangle', .06);
+    else if (k === 'turn') tone(700, 0, .05, 'triangle', .05);
+    else if (k === 'bump') { tone(160, 0, .18, 'square', .08); tone(120, .08, .2, 'square', .06); }
+    else if (k === 'bone') [880,1175,1568].forEach((f,i) => tone(f, i*.07, .15, 'triangle', .09));
+    else if (k === 'pick') { tone(660, 0, .08, 'sine', .1); tone(990, .07, .1, 'sine', .1); }
+    else if (k === 'say')  { tone(600, 0, .07, 'sine', .07); tone(750, .08, .07, 'sine', .07); }
+    else if (k === 'door') { tone(300, 0, .12, 'square', .05); tone(450, .1, .15, 'square', .05); }
+    else if (k === 'var')  tone(880, 0, .05, 'sine', .06);
+    else if (k === 'win')  [523,659,784,1047].forEach((f,i) => tone(f, i*.12, .25, 'triangle', .11));
+    else if (k === 'fail') [392,330,262].forEach((f,i) => tone(f, i*.12, .2, 'sine', .09));
+  } catch(e) {}
+}
+
+/* =========================================================
+   美術：SVG 角色與物件（繪本風）
+   ========================================================= */
+const INK = '#5B4330';
+function dogArt(o={}){
+  const eye = o.sleep
+    ? `<path d="M79 35 q4 3 8 0" fill="none" stroke="#2C1E14" stroke-width="2.6" stroke-linecap="round"/>`
+    : `<circle cx="83" cy="34" r="3.6" fill="#2C1E14"/><circle cx="84.3" cy="32.7" r="1.2" fill="#fff"/>`;
+  const mouth = o.happy
+    ? `<path d="M90 50 q5 7 10 0 z" fill="#C94F4F" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`
+    : `<path d="M92 50 q3 3 6 0" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`;
+  return `<g>
+   <path d="M22 60 q-15 -6 -10 -24" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/>
+   <path d="M22 60 q-15 -6 -10 -24" fill="none" stroke="#F6E7CF" stroke-width="4" stroke-linecap="round"/>
+   <rect x="27" y="66" width="10" height="20" rx="5" fill="#E9D5B5" stroke="${INK}" stroke-width="3"/>
+   <rect x="57" y="66" width="10" height="20" rx="5" fill="#E9D5B5" stroke="${INK}" stroke-width="3"/>
+   <ellipse cx="46" cy="61" rx="29" ry="17" fill="#F6E7CF" stroke="${INK}" stroke-width="3"/>
+   <ellipse cx="38" cy="57" rx="10" ry="7" fill="#E2C49A"/>
+   <rect x="35" y="68" width="10" height="20" rx="5" fill="#F6E7CF" stroke="${INK}" stroke-width="3"/>
+   <rect x="65" y="68" width="10" height="20" rx="5" fill="#F6E7CF" stroke="${INK}" stroke-width="3"/>
+   <path d="M57 46 q14 11 28 1 l3 8 q-16 9 -32 -1 z" fill="#D9473A" stroke="#8E2A20" stroke-width="2" stroke-linejoin="round"/>
+   <path d="M63 53 l-5 11 l8 -3 z" fill="#D9473A" stroke="#8E2A20" stroke-width="2" stroke-linejoin="round"/>
+   <circle cx="76" cy="38" r="19" fill="#F6E7CF" stroke="${INK}" stroke-width="3"/>
+   <ellipse cx="92" cy="45" rx="11" ry="8.5" fill="#FFF7E8" stroke="${INK}" stroke-width="2.6"/>
+   <ellipse cx="101" cy="42" rx="4.2" ry="3.4" fill="#3A2A1E"/>
+   ${mouth}${eye}
+   <ellipse cx="83" cy="44" rx="4" ry="2.6" fill="#F4A09A" opacity=".75"/>
+   <path d="M66 25 q-16 1 -13 26 q9 2 13 -9 z" fill="#9B6A43" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/>
+   <path d="M58 27 q17 -24 36 -4 z" fill="#B5885A" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/>
+   <path d="M60 26 q16 -6 33 -2" fill="none" stroke="#7B5634" stroke-width="3"/>
+   <path d="M91 23 q11 -1 13 5 l-12 1 z" fill="#B5885A" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>
+   <path d="M66 16 l4 5 M76 13 l1 6 M84 14 l-1 6" stroke="#7B5634" stroke-width="1.6" stroke-linecap="round"/>
+   ${o.badge ? `<g transform="translate(62 64)">${starShape(0,0,9,4,'#F5C431','#9C6B00')}</g>` : ''}
+  </g>`;
+}
+function catArt(o={}){
+  const mask = o.nomask
+    ? `<ellipse cx="68" cy="41" rx="4.6" ry="3.8" fill="#F7E36A"/><ellipse cx="85" cy="41" rx="4.6" ry="3.8" fill="#F7E36A"/>`
+    : `<path d="M58 37 q18 -7 36 0 l-1 10 q-17 -5 -34 0 z" fill="#8E5BC0" stroke="#1E1A2A" stroke-width="2"/>
+       <ellipse cx="68" cy="41" rx="4.6" ry="3.8" fill="#F7E36A"/><ellipse cx="85" cy="41" rx="4.6" ry="3.8" fill="#F7E36A"/>`;
+  return `<g>
+   <path d="M22 62 q-20 -4 -12 -26 q5 -10 -3 -16" fill="none" stroke="#2E2A3D" stroke-width="8" stroke-linecap="round"/>
+   <circle cx="7" cy="20" r="4.5" fill="#fff" stroke="#2E2A3D" stroke-width="2"/>
+   <rect x="28" y="66" width="9" height="20" rx="4.5" fill="#2E2A3D"/>
+   <rect x="58" y="66" width="9" height="20" rx="4.5" fill="#2E2A3D"/>
+   <ellipse cx="46" cy="62" rx="27" ry="15" fill="#3A3550" stroke="#1E1A2A" stroke-width="3"/>
+   <rect x="36" y="68" width="9" height="20" rx="4.5" fill="#3A3550" stroke="#1E1A2A" stroke-width="2.5"/>
+   <rect x="66" y="68" width="9" height="20" rx="4.5" fill="#3A3550" stroke="#1E1A2A" stroke-width="2.5"/>
+   <path d="M62 30 l3 -17 l11 12 z M80 25 l9 -13 l2 17 z" fill="#3A3550" stroke="#1E1A2A" stroke-width="2.5" stroke-linejoin="round"/>
+   <path d="M65 26 l1.5 -8 l5 6 z M82 24 l5 -6 l1 8 z" fill="#E59BB0"/>
+   <circle cx="76" cy="42" r="18" fill="#3A3550" stroke="#1E1A2A" stroke-width="3"/>
+   ${mask}
+   <ellipse cx="69" cy="41" rx="1.4" ry="3.2" fill="#1E1A2A"/><ellipse cx="86" cy="41" rx="1.4" ry="3.2" fill="#1E1A2A"/>
+   <path d="M89 49 l3 -2 l1 3 z" fill="#F08FA8"/>
+   <path d="M84 53 q4 3 8 -1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+   <path d="M92 50 l12 -3 M92 53 l12 1" stroke="#ddd" stroke-width="1.3"/>
+   ${o.badge ? `<g transform="translate(96 54)">${starShape(0,0,9,4,'#F5C431','#9C6B00')}</g>` : ''}
+  </g>`;
+}
+function birdArt(){
+  return `<g>
+   <path d="M30 58 l-22 -4 l6 10 z" fill="#8A5A3B" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+   <ellipse cx="52" cy="58" rx="27" ry="21" fill="#C28B5A" stroke="${INK}" stroke-width="3"/>
+   <ellipse cx="58" cy="66" rx="17" ry="12" fill="#F3E2C8"/>
+   <path d="M34 52 q16 -12 30 2 q-14 10 -30 -2 z" fill="#8A5A3B" stroke="${INK}" stroke-width="2.4"/>
+   <circle cx="78" cy="40" r="17" fill="#C28B5A" stroke="${INK}" stroke-width="3"/>
+   <path d="M66 30 q12 -10 24 0" fill="#7A4A2B"/>
+   <ellipse cx="86" cy="46" rx="6" ry="5" fill="#F3E2C8"/>
+   <path d="M93 39 l11 3 l-11 4 z" fill="#F0A030" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+   <circle cx="84" cy="36" r="3.3" fill="#2C1E14"/><circle cx="85.2" cy="34.8" r="1.1" fill="#fff"/>
+   <ellipse cx="79" cy="44" rx="3.4" ry="2.2" fill="#F4A09A" opacity=".8"/>
+   <path d="M46 78 v9 M58 78 v9" stroke="#E07A4F" stroke-width="3" stroke-linecap="round"/>
+  </g>`;
+}
+function pigeonArt(){
+  return `<g>
+   <ellipse cx="30" cy="40" rx="17" ry="13" fill="#A9B2C3" stroke="${INK}" stroke-width="2.5"/>
+   <path d="M15 38 q-8 4 -6 10 q8 -1 12 -5" fill="#8C95A8" stroke="${INK}" stroke-width="2.2"/>
+   <circle cx="42" cy="24" r="9" fill="#A9B2C3" stroke="${INK}" stroke-width="2.5"/>
+   <path d="M36 31 q6 5 12 0" fill="none" stroke="#6BBF9A" stroke-width="4"/>
+   <path d="M50 23 l7 2 l-7 2 z" fill="#E9A23B" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+   <circle cx="44" cy="22" r="2" fill="#2C1E14"/>
+   <path d="M27 52 v6 M34 52 v6" stroke="#E07A4F" stroke-width="2.5" stroke-linecap="round"/>
+  </g>`;
+}
+function personArt(o){
+  return `<g>
+   <path d="M15 57 q0 -26 15 -28 q15 2 15 28 z" fill="${o.cloth}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+   ${o.bag ? `<rect x="33" y="38" width="12" height="11" rx="2" fill="#B07A48" stroke="${INK}" stroke-width="2"/><path d="M24 30 l14 9" stroke="${INK}" stroke-width="2"/>` : ''}
+   <circle cx="30" cy="20" r="10" fill="#F8D7B5" stroke="${INK}" stroke-width="2.5"/>
+   ${o.hat}
+   <circle cx="26.5" cy="21" r="1.4" fill="#2C1E14"/><circle cx="33.5" cy="21" r="1.4" fill="#2C1E14"/>
+   <path d="M27 25 q3 2.5 6 0" fill="none" stroke="${INK}" stroke-width="1.5" stroke-linecap="round"/>
+   <ellipse cx="25" cy="24" rx="2" ry="1.3" fill="#F4A09A"/><ellipse cx="35" cy="24" rx="2" ry="1.3" fill="#F4A09A"/>
+  </g>`;
+}
+const ladyArt = () => personArt({cloth:'#6FA8DC', hat:`<path d="M20 18 q10 -14 20 0 q-3 -4 -10 -4 q-6 0 -10 4z" fill="#8A5A3B" stroke="${INK}" stroke-width="2"/><circle cx="30" cy="7" r="5" fill="#8A5A3B" stroke="${INK}" stroke-width="2"/>`});
+const postmanArt = () => personArt({cloth:'#3E7CB1', bag:true, hat:`<path d="M19 15 q11 -10 22 0 v2 h-22 z" fill="#2B5A85" stroke="${INK}" stroke-width="2"/><rect x="29" y="16" width="14" height="3" rx="1.5" fill="#2B5A85"/>`});
+const kidArt = () => personArt({cloth:'#E8574A', hat:`<path d="M20 18 q2 -12 10 -12 q9 0 10 12 q-4 -6 -10 -6 q-6 0 -10 6z" fill="#3A2A1E" stroke="${INK}" stroke-width="2"/>`});
+function owlArt(){
+  return `<g>
+   <ellipse cx="30" cy="36" rx="16" ry="19" fill="#9B6A43" stroke="${INK}" stroke-width="2.5"/>
+   <ellipse cx="30" cy="42" rx="10" ry="11" fill="#E8D2AE"/>
+   <path d="M17 22 l4 -8 l5 6 M43 22 l-4 -8 l-5 6" fill="#9B6A43" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+   <circle cx="24" cy="28" r="6" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="36" cy="28" r="6" fill="#fff" stroke="${INK}" stroke-width="2"/>
+   <circle cx="24" cy="28" r="2.6" fill="#2C1E14"/><circle cx="36" cy="28" r="2.6" fill="#2C1E14"/>
+   <path d="M28 33 l2 4 l2 -4 z" fill="#F0A030" stroke="${INK}" stroke-width="1.4"/>
+   <path d="M22 55 v4 M38 55 v4" stroke="#F0A030" stroke-width="3" stroke-linecap="round"/>
+  </g>`;
+}
+function crabArt(){
+  return `<g>
+   <path d="M-14 -6 q-8 -10 -2 -16 M14 -6 q8 -10 2 -16" fill="none" stroke="#B83B2E" stroke-width="3"/>
+   <circle cx="-16" cy="-22" r="5" fill="#E8574A" stroke="${INK}" stroke-width="2"/><circle cx="16" cy="-22" r="5" fill="#E8574A" stroke="${INK}" stroke-width="2"/>
+   <path d="M-14 4 l-9 6 M-12 8 l-7 8 M14 4 l9 6 M12 8 l7 8" stroke="#B83B2E" stroke-width="3" stroke-linecap="round"/>
+   <ellipse cx="0" cy="0" rx="16" ry="11" fill="#E8574A" stroke="${INK}" stroke-width="2.5"/>
+   <path d="M-5 -10 v-6 M5 -10 v-6" stroke="${INK}" stroke-width="2"/><circle cx="-5" cy="-17" r="2.6" fill="#2C1E14"/><circle cx="5" cy="-17" r="2.6" fill="#2C1E14"/>
+   <path d="M-4 3 q4 3 8 0" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>
+  </g>`;
+}
+function starShape(cx,cy,R,r,fill,stroke){
+  let p = '';
+  for (let i=0;i<10;i++){
+    const a = -Math.PI/2 + i*Math.PI/5, rr = i%2 ? r : R;
+    p += (i?'L':'M') + (cx+Math.cos(a)*rr).toFixed(1) + ' ' + (cy+Math.sin(a)*rr).toFixed(1);
+  }
+  return `<path d="${p}z" fill="${fill}" stroke="${stroke}" stroke-width="2" stroke-linejoin="round"/>`;
+}
+function boneShape(fill, stroke){
+  return `<g><rect x="-11" y="-4" width="22" height="8" rx="3" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+   <circle cx="-11" cy="-4.5" r="5" fill="${fill}" stroke="${stroke}" stroke-width="2"/><circle cx="-11" cy="4.5" r="5" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+   <circle cx="11" cy="-4.5" r="5" fill="${fill}" stroke="${stroke}" stroke-width="2"/><circle cx="11" cy="4.5" r="5" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+   <rect x="-10" y="-3" width="20" height="6" rx="2" fill="${fill}"/><path d="M-6 -1.5 h8" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/></g>`;
+}
+const boneArt = () => boneShape('#F7C948', '#A8740C');
+function itemArt(kind){
+  switch (kind){
+  case 'hanky': return `<g transform="rotate(-12)"><rect x="-12" y="-12" width="24" height="24" rx="3" fill="#F7A8C4" stroke="${INK}" stroke-width="2"/>
+     <circle cx="-5" cy="-5" r="2" fill="#fff"/><circle cx="5" cy="-5" r="2" fill="#fff"/><circle cx="-5" cy="5" r="2" fill="#fff"/><circle cx="5" cy="5" r="2" fill="#fff"/><circle cx="0" cy="0" r="2" fill="#fff"/></g>`;
+  case 'bell': return `<g><path d="M-10 6 q0 -16 10 -16 q10 0 10 16 l3 3 h-26 z" fill="#F5C431" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+     <circle cx="0" cy="11" r="3.5" fill="#C9950A" stroke="${INK}" stroke-width="1.5"/><circle cx="0" cy="-12" r="2.5" fill="none" stroke="${INK}" stroke-width="2"/><path d="M-5 -4 q2 -4 5 -4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></g>`;
+  case 'yarn': return `<g><circle r="12" fill="#B48BE0" stroke="${INK}" stroke-width="2"/>
+     <path d="M-10 -5 q10 6 20 -2 M-11 3 q11 6 21 -1 M-4 -11 q-4 11 4 22 M4 -11 q4 10 -2 22" fill="none" stroke="#8E62C4" stroke-width="1.8"/><path d="M10 7 q8 4 6 10" fill="none" stroke="#B48BE0" stroke-width="2.5" stroke-linecap="round"/></g>`;
+  case 'feather': return `<g transform="rotate(30)"><path d="M0 -15 q11 8 0 28 q-11 -20 0 -28 z" fill="#8FD0E8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+     <path d="M0 -12 v29" stroke="${INK}" stroke-width="1.8"/><path d="M0 -4 l5 -3 M0 2 l5 -3 M0 -2 l-5 -3 M0 4 l-5 -3" stroke="#5BA9C6" stroke-width="1.5"/></g>`;
+  case 'letter': return `<g transform="rotate(-6)"><rect x="-14" y="-10" width="28" height="20" rx="2" fill="#FFF7E0" stroke="${INK}" stroke-width="2"/><path d="M-14 -10 l14 11 l14 -11" fill="none" stroke="${INK}" stroke-width="2"/><circle cx="0" cy="2" r="3.5" fill="#E8574A"/></g>`;
+  case 'fish': return `<g><path d="M-13 0 q8 -10 20 0 q-12 10 -20 0 z" fill="#D9A15B" stroke="${INK}" stroke-width="2"/><path d="M7 0 l8 -7 v14 z" fill="#D9A15B" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-7" cy="-1.5" r="1.8" fill="${INK}"/><path d="M-2 -4 v8 M2 -4 v8" stroke="#B57F3E" stroke-width="1.4"/></g>`;
+  case 'shell': return `<g><path d="M0 11 l-13 -11 q0 -12 13 -12 q13 0 13 12 z" fill="#F7B6C2" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M0 11 l-7 -20 M0 11 v-23 M0 11 l7 -20" stroke="#D9849A" stroke-width="1.6"/><rect x="-4" y="9" width="8" height="5" rx="2" fill="#F7B6C2" stroke="${INK}" stroke-width="1.8"/></g>`;
+  case 'bone2': return `<g transform="rotate(-20) scale(.85)">${boneShape('#FFFDF5', '#9C8C72')}</g>`;
+  case 'berry': return `<g><circle cx="-5" cy="2" r="6.5" fill="#4F6BD8" stroke="${INK}" stroke-width="2"/><circle cx="6" cy="3" r="6.5" fill="#5A78E6" stroke="${INK}" stroke-width="2"/><circle cx="0" cy="-7" r="6.5" fill="#4762CC" stroke="${INK}" stroke-width="2"/><path d="M0 -13 q4 -5 9 -3" fill="none" stroke="#4F8A3A" stroke-width="2.5" stroke-linecap="round"/><circle cx="-1" cy="-9" r="1.4" fill="#fff" opacity=".7"/></g>`;
+  case 'mushroom': return `<g><rect x="-5" y="-1" width="10" height="13" rx="4" fill="#FFF7E0" stroke="${INK}" stroke-width="2"/><path d="M-14 1 q0 -15 14 -15 q14 0 14 15 z" fill="#D93B3B" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-6" cy="-6" r="2.5" fill="#fff"/><circle cx="5" cy="-8" r="2" fill="#fff"/><circle cx="7" cy="-2" r="1.8" fill="#fff"/></g>`;
+  case 'acorn': return `<g><ellipse cx="0" cy="3" rx="9" ry="11" fill="#C98A4B" stroke="${INK}" stroke-width="2"/><path d="M-11 -4 q11 -12 22 0 q-11 4 -22 0 z" fill="#8A5A3B" stroke="${INK}" stroke-width="2"/><path d="M0 -10 v-5" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/></g>`;
+  case 'gem': return `<g><path d="M-12 -4 l6 -8 h12 l6 8 l-12 16 z" fill="#5FD3E6" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M-12 -4 h24 M-6 -12 l-2 8 l8 16 l8 -16 l-2 -8" fill="none" stroke="#2E9AB0" stroke-width="1.5"/><path d="M-4 -9 l-2 4" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>`;
+  case 'key': return `<g transform="rotate(-30)"><circle cx="-8" cy="0" r="7" fill="none" stroke="#C9950A" stroke-width="4.5"/><circle cx="-8" cy="0" r="7" fill="none" stroke="${INK}" stroke-width="1.2"/><path d="M-1 0 h16 M10 0 v6 M15 0 v5" stroke="#C9950A" stroke-width="4.5" stroke-linecap="round"/></g>`;
+  case 'badge': return `<g><circle r="14" fill="#FFF3C4" stroke="${INK}" stroke-width="2.5"/>${starShape(0,0,10,4.5,'#F5C431','#9C6B00')}<path d="M-8 12 l-4 10 l7 -3 l3 6 l2 -10 M8 12 l4 10 l-7 -3" fill="#D9473A" stroke="${INK}" stroke-width="1.5"/></g>`;
+  }
+  return '';
+}
+function pawArt(fill, op){
+  return `<g fill="${fill}" opacity="${op}"><ellipse cx="0" cy="3" rx="6" ry="5"/><circle cx="-6" cy="-4" r="2.6"/><circle cx="-2" cy="-7.5" r="2.6"/><circle cx="3" cy="-7.5" r="2.6"/><circle cx="7" cy="-4" r="2.6"/></g>`;
+}
+function clueIcon(kind, size=56){
+  let inner = '';
+  if (kind === 'paw') inner = `<g transform="translate(30 32) scale(1.6)">${pawArt('#6B4A2F',1)}</g>`;
+  else if (kind === 'wetpaw') inner = `<g transform="translate(30 32) scale(1.6)">${pawArt('#3D8FC4',1)}</g><path d="M46 12 q4 6 0 8 q-4 -2 0 -8z" fill="#7CC3EA"/>`;
+  else if (kind === 'hair') inner = `<path d="M14 40 q10 -24 30 -26 M18 46 q12 -22 30 -22 M24 50 q10 -18 26 -16" fill="none" stroke="#2E2A3D" stroke-width="3" stroke-linecap="round"/>`;
+  else if (kind === 'map') inner = `<path d="M10 14 l13 -4 l14 4 l13 -4 v36 l-13 4 l-14 -4 l-13 4z" fill="#F3E2B5" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/><path d="M23 10 v36 M37 14 v36" stroke="${INK}" stroke-width="1.5"/><path d="M14 36 q8 -12 18 -6 t16 -10" fill="none" stroke="#D9473A" stroke-width="2" stroke-dasharray="3 3"/>`;
+  else if (kind === 'note') inner = `<path d="M22 42 v-26 l18 -5 v26" fill="none" stroke="${INK}" stroke-width="3"/><ellipse cx="18" cy="43" rx="6" ry="4.5" fill="${INK}"/><ellipse cx="36" cy="38" rx="6" ry="4.5" fill="${INK}"/>`;
+  else if (kind === 'talk') inner = `<path d="M8 12 h44 a5 5 0 0 1 5 5 v20 a5 5 0 0 1 -5 5 h-28 l-9 8 v-8 h-7 a5 5 0 0 1 -5 -5 v-20 a5 5 0 0 1 5 -5z" fill="#fff" stroke="${INK}" stroke-width="2.5"/><text x="30" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="${INK}">!!</text>`;
+  else if (kind === 'route') inner = `<rect x="8" y="8" width="44" height="44" rx="5" fill="#E8F4D9" stroke="${INK}" stroke-width="2.5"/><path d="M15 16 h26 v26" fill="none" stroke="#D9473A" stroke-width="3" stroke-dasharray="4 3"/><path d="M36 37 l5 6 l6 -8" fill="none" stroke="#4F8A3A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  else if (kind === 'mask') inner = `<path d="M6 24 q24 -12 48 0 l-2 14 q-22 -7 -44 0 z" fill="#8E5BC0" stroke="${INK}" stroke-width="2.5"/><ellipse cx="20" cy="29" rx="6" ry="4.5" fill="#FBF5E9"/><ellipse cx="40" cy="29" rx="6" ry="4.5" fill="#FBF5E9"/>`;
+  else inner = `<g transform="translate(30 30) scale(1.7)">${itemArt(kind)}</g>`;
+  return `<svg viewBox="0 0 60 60" width="${size}" height="${size}">${inner}</svg>`;
+}
+
+/* ---------- 情境主題：地面與障礙物 ---------- */
+function hash(x,y){ return ((x*73856093) ^ (y*19349663)) >>> 0; }
+const THEMES = {
+  park:   {ground:'#CDE6A5', tex:'#A8CE80', grid:'#6C8A4A', path:'#EEDDB7', pathDot:'#D3BF94', water:'#93CDEB', wall:'樹',   wall2:'花圃',   wallMsg:'砰！汪汪撞到樹了！', wall2Msg:'不可以踩到花圃喔！'},
+  town:   {ground:'#E9E1D0', tex:'#D6CBB4', grid:'#8A7A60', path:'#CFCFCF', pathDot:'#B4B4B4', water:'#93CDEB', wall:'房子', wall2:'花台',   wallMsg:'砰！汪汪撞到房子了！', wall2Msg:'不可以踩進花台喔！'},
+  beach:  {ground:'#F5E6B8', tex:'#E6D29B', grid:'#A08A50', path:'#C99A63', pathDot:'#A87B48', water:'#6FB8E0', wall:'石頭', wall2:'遮陽傘', wallMsg:'砰！汪汪撞到礁石了！', wall2Msg:'撞到遮陽傘了！'},
+  forest: {ground:'#AFCF8C', tex:'#93BA70', grid:'#4F6E35', path:'#D9C49A', pathDot:'#BFA878', water:'#7FC0D8', wall:'樹',   wall2:'樹叢',   wallMsg:'砰！汪汪撞到大樹了！', wall2Msg:'鑽不過樹叢！'},
+  castle: {ground:'#DAD4C8', tex:'#C4BCAD', grid:'#7A7060', path:'#C0504D', pathDot:'#A33F3C', water:'#6E9CC8', wall:'牆',   wall2:'盔甲',   wallMsg:'砰！汪汪撞到牆了！', wall2Msg:'撞到盔甲雕像了！'},
+};
+const themeOf = L => THEMES[sceneOf(L).theme];
+function treeArt(x,y){
+  const h = hash(x,y), greens = [['#6FAF55','#3F6E32','#8CC86E'],['#5E9E4B','#3A632D','#7FBB62'],['#79B85C','#457638','#98D07A']];
+  const [g, gd, gl] = greens[h % 3];
+  const fruit = h % 4 === 0 ? `<circle cx="22" cy="30" r="2.6" fill="#E8574A"/><circle cx="37" cy="24" r="2.6" fill="#E8574A"/>` : '';
+  return `<g transform="translate(${x*T} ${y*T})"><ellipse cx="30" cy="52" rx="19" ry="5" fill="#000" opacity=".12"/>
+    <rect x="26" y="34" width="8" height="18" rx="3" fill="#8B5E3C" stroke="#5A3A22" stroke-width="2"/>
+    <circle cx="30" cy="27" r="20" fill="${g}" stroke="${gd}" stroke-width="2.5"/>
+    <circle cx="22" cy="21" r="7" fill="${gl}" opacity=".85"/>${fruit}</g>`;
+}
+function pineArt(x,y){
+  const h = hash(x,y), g = ['#3F8A4A','#4C9A55','#357A40'][h%3];
+  return `<g transform="translate(${x*T} ${y*T})"><ellipse cx="30" cy="53" rx="17" ry="4.5" fill="#000" opacity=".14"/>
+    <rect x="26" y="42" width="8" height="12" rx="2" fill="#7A5232" stroke="#4E331E" stroke-width="2"/>
+    <path d="M30 4 L48 26 H40 L52 44 H8 L20 26 H12 Z" fill="${g}" stroke="#244F2B" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M30 10 L38 22" stroke="#6FB872" stroke-width="3" stroke-linecap="round" opacity=".7"/></g>`;
+}
+function houseArt(x,y){
+  const h = hash(x,y), walls = ['#F4C7A1','#B8D8E8','#F2E3A0','#D8C3E6','#C9E3B5'], roofs = ['#D9534F','#8E5BC0','#3E7CB1','#C98A3C'];
+  const w = walls[h%5], r = roofs[(h>>3)%4];
+  return `<g transform="translate(${x*T} ${y*T})"><rect x="7" y="24" width="46" height="32" fill="${w}" stroke="${INK}" stroke-width="2.5"/>
+    <path d="M3 26 L30 5 L57 26 Z" fill="${r}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+    <rect x="14" y="32" width="12" height="11" fill="#FFF3B0" stroke="${INK}" stroke-width="2"/><path d="M20 32 v11 M14 37.5 h12" stroke="${INK}" stroke-width="1.4"/>
+    <rect x="34" y="38" width="12" height="18" rx="2" fill="#9B6A43" stroke="${INK}" stroke-width="2"/></g>`;
+}
+function rockArt(x,y){
+  const h = hash(x,y);
+  return `<g transform="translate(${x*T} ${y*T})"><ellipse cx="30" cy="50" rx="22" ry="6" fill="#000" opacity=".12"/>
+    <path d="M8 46 q-2 -20 12 -28 q12 -10 24 -2 q14 8 10 30 z" fill="${h%2?'#A8A39A':'#9C978E'}" stroke="#5E5A52" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M18 26 q6 -6 14 -4" fill="none" stroke="#D2CEC6" stroke-width="3" stroke-linecap="round"/></g>`;
+}
+function wallArt(x,y){
+  return `<g transform="translate(${x*T} ${y*T})"><rect x="0" y="0" width="60" height="60" fill="#A79C8A" stroke="#6E6455" stroke-width="2"/>
+    <path d="M0 15 h60 M0 30 h60 M0 45 h60 M20 0 v15 M45 0 v15 M10 15 v15 M35 15 v15 M20 30 v15 M45 30 v15 M10 45 v15 M35 45 v15" stroke="#7F7565" stroke-width="2"/>
+    <rect x="0" y="0" width="60" height="5" fill="#BDB3A2"/></g>`;
+}
+function flowerArt(x,y){
+  const h = hash(x,y), cols = ['#F48FB1','#FFD54F','#FFFFFF','#CE93D8'];
+  let dots = '';
+  for (let i=0;i<6;i++){ const c = cols[(h+i)%4]; dots += `<circle cx="${12+(i%3)*18}" cy="${22+Math.floor(i/3)*16}" r="4.5" fill="${c}" stroke="#B0667E" stroke-width="1"/><circle cx="${12+(i%3)*18}" cy="${22+Math.floor(i/3)*16}" r="1.6" fill="#F3B33D"/>`; }
+  return `<g transform="translate(${x*T} ${y*T})"><rect x="3" y="10" width="54" height="44" rx="14" fill="#5E9E4B" stroke="#3A632D" stroke-width="2.5"/>${dots}</g>`;
+}
+function planterArt(x,y){
+  return `<g transform="translate(${x*T} ${y*T})"><circle cx="18" cy="24" r="8" fill="#F48FB1" stroke="#B0667E" stroke-width="1.5"/><circle cx="32" cy="18" r="8" fill="#FFD54F" stroke="#C9A23A" stroke-width="1.5"/><circle cx="44" cy="26" r="8" fill="#CE93D8" stroke="#946AA0" stroke-width="1.5"/>
+    <path d="M12 30 h36 v6 h-36z" fill="#5E9E4B"/><rect x="8" y="34" width="44" height="20" rx="3" fill="#B07A48" stroke="${INK}" stroke-width="2.5"/><path d="M8 42 h44" stroke="${INK}" stroke-width="1.5"/></g>`;
+}
+function umbrellaArt(x,y){
+  return `<g transform="translate(${x*T} ${y*T})"><ellipse cx="30" cy="52" rx="20" ry="5" fill="#000" opacity=".12"/><path d="M30 22 v32" stroke="${INK}" stroke-width="3"/>
+    <path d="M4 26 q26 -28 52 0 z" fill="#F28B82" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/><path d="M17 26 q13 -26 13 -26 q0 0 13 26" fill="#FFF7E8" stroke="${INK}" stroke-width="2"/></g>`;
+}
+function bushArt(x,y){
+  return `<g transform="translate(${x*T} ${y*T})"><ellipse cx="30" cy="50" rx="22" ry="5" fill="#000" opacity=".12"/>
+    <circle cx="18" cy="36" r="13" fill="#4C8A3F" stroke="#2E5A27" stroke-width="2.5"/><circle cx="42" cy="36" r="13" fill="#4C8A3F" stroke="#2E5A27" stroke-width="2.5"/><circle cx="30" cy="26" r="14" fill="#5C9C4C" stroke="#2E5A27" stroke-width="2.5"/>
+    <circle cx="22" cy="30" r="2.5" fill="#E8574A"/><circle cx="38" cy="38" r="2.5" fill="#E8574A"/><circle cx="31" cy="20" r="2.5" fill="#E8574A"/></g>`;
+}
+function armorArt(x,y){
+  return `<g transform="translate(${x*T} ${y*T})"><rect x="14" y="48" width="32" height="8" rx="2" fill="#8C8273" stroke="${INK}" stroke-width="2"/>
+    <path d="M20 48 v-14 q10 -6 20 0 v14 z" fill="#B9C2CC" stroke="#56606A" stroke-width="2.5"/><circle cx="30" cy="20" r="10" fill="#C9D1D9" stroke="#56606A" stroke-width="2.5"/>
+    <path d="M22 20 h16" stroke="#3A4550" stroke-width="3"/><path d="M30 10 q2 -8 8 -6" fill="none" stroke="#D9473A" stroke-width="3" stroke-linecap="round"/>
+    <path d="M44 14 v36" stroke="#8C8273" stroke-width="3"/><path d="M40 14 l4 -8 l4 8z" fill="#C9D1D9" stroke="#56606A" stroke-width="1.5"/></g>`;
+}
+function waterArt(x,y,th){
+  return `<g transform="translate(${x*T} ${y*T})"><rect x="-0.5" y="-0.5" width="61" height="61" fill="${th.water}"/>
+    <path d="M8 ${18+(x%2)*6} q6 -5 12 0 t12 0 M28 ${42-(y%2)*6} q6 -5 12 0 t12 0" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".8"/></g>`;
+}
+function goalArt(x,y){
+  return `<g transform="translate(${x*T} ${y*T})"><circle cx="30" cy="32" r="22" fill="#FFF3B0" opacity=".7" class="pulse"/>
+    <ellipse cx="30" cy="50" rx="13" ry="4.5" fill="#000" opacity=".15"/>
+    <path d="M22 50 V10" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M23 11 h22 l-6 8 l6 8 h-22 z" fill="#E8574A" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+    ${starShape(32,19,4.5,2,'#FFE16B','#B8860B')}</g>`;
+}
+function benchArt(x,y){
+  return `<g transform="translate(${x*T} ${y*T})"><rect x="3" y="3" width="54" height="54" rx="10" fill="#FFF7C2" stroke="#F0B429" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <rect x="10" y="20" width="40" height="7" rx="2" fill="#B07A48" stroke="${INK}" stroke-width="2"/>
+    <rect x="10" y="31" width="40" height="7" rx="2" fill="#C48D57" stroke="${INK}" stroke-width="2"/>
+    <path d="M15 38 v12 M45 38 v12" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>
+    <path d="M50 8 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z" fill="#FFD54F"/></g>`;
+}
+const TILE_COLOR = {r:['#F28B82','#C9564C'], b:['#7FB3F5','#3E78C9'], y:['#FFE082','#D1A93A']};
+function colorTileArt(x,y,c){
+  const [f, s] = TILE_COLOR[c];
+  return `<rect x="${x*T+4}" y="${y*T+4}" width="52" height="52" rx="10" fill="${f}" stroke="${s}" stroke-width="3"/>
+    <rect x="${x*T+12}" y="${y*T+12}" width="36" height="36" rx="7" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/>`;
+}
+const PAIR_COLOR = {X:'#F5B935', K:'#F5B935', Y:'#9B6FD6', J:'#9B6FD6'};
+function buttonArt(x,y,ch,pressed){
+  const c = PAIR_COLOR[ch];
+  return `<g transform="translate(${x*T} ${y*T})"><rect x="6" y="6" width="48" height="48" rx="10" fill="#8C8273" stroke="${INK}" stroke-width="2.5"/>
+    <ellipse cx="30" cy="${pressed?32:28}" rx="16" ry="${pressed?9:12}" fill="${c}" stroke="${INK}" stroke-width="2.5"/>
+    ${pressed ? '' : `<path d="M22 24 q6 -5 12 -3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>`}</g>`;
+}
+function doorArt(x,y,ch,open){
+  const c = PAIR_COLOR[ch];
+  return `<g transform="translate(${x*T} ${y*T})"><rect x="0" y="0" width="60" height="60" fill="#A79C8A" stroke="#6E6455" stroke-width="2"/>
+    <path d="M8 58 v-36 q22 -22 44 0 v36 z" fill="${open?'#3A3226':'#9B6A43'}" stroke="${INK}" stroke-width="3"/>
+    ${open ? `<path d="M8 58 v-36 q22 -22 44 0 v36" fill="none" stroke="${c}" stroke-width="4"/>` :
+      `<path d="M8 30 h44 M8 44 h44" stroke="#5A3A22" stroke-width="3"/><path d="M30 14 v44" stroke="#5A3A22" stroke-width="2"/><circle cx="30" cy="38" r="6" fill="${c}" stroke="${INK}" stroke-width="2"/>`}</g>`;
+}
+const npcArt = { pigeon:pigeonArt, lady:ladyArt, postman:postmanArt, owl:owlArt };
+
+/* =========================================================
+   舞台
+   ========================================================= */
+const stage = $('stage');
+function tileAt(x,y){ const g = S.g; return (x<0||y<0||x>=COLS||y>=ROWS) ? null : g.map[y][x]; }
+function buildStage(){
+  const L = curL(), g = S.g, th = themeOf(L), theme = sceneOf(L).theme;
+  let base = `<defs><pattern id="gtex" width="30" height="30" patternUnits="userSpaceOnUse">
+     ${theme === 'castle' ? `<path d="M0 0 h30 v30" fill="none" stroke="${th.tex}" stroke-width="1.5"/>` :
+       theme === 'town' ? `<circle cx="8" cy="8" r="5" fill="none" stroke="${th.tex}" stroke-width="1.5"/><circle cx="23" cy="22" r="5" fill="none" stroke="${th.tex}" stroke-width="1.5"/>` :
+       theme === 'beach' ? `<circle cx="6" cy="9" r="1.3" fill="${th.tex}"/><circle cx="20" cy="18" r="1.3" fill="${th.tex}"/><circle cx="12" cy="26" r="1.3" fill="${th.tex}"/>` :
+       `<path d="M5 12 q2 -5 4 0 M18 24 q2 -5 4 0 M24 7 q1.5 -4 3 0" stroke="${th.tex}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`}</pattern></defs>
+    <rect width="480" height="360" fill="${th.ground}"/><rect width="480" height="360" fill="url(#gtex)"/>`;
+  let flat = '', grid = '', marks = '', tall = '';
+  for (let y=0;y<ROWS;y++) for (let x=0;x<COLS;x++){
+    const c = g.map[y][x];
+    if (c === '=') flat += theme === 'town'
+      ? `<rect x="${x*T}" y="${y*T+6}" width="60" height="48" fill="${th.path}"/><path d="M${x*T+8} ${y*T+30} h16 M${x*T+36} ${y*T+30} h16" stroke="#fff" stroke-width="4"/>`
+      : theme === 'beach'
+      ? `<rect x="${x*T}" y="${y*T+8}" width="60" height="44" fill="${th.path}" stroke="#8A6236" stroke-width="2"/><path d="M${x*T+15} ${y*T+8} v44 M${x*T+30} ${y*T+8} v44 M${x*T+45} ${y*T+8} v44" stroke="#8A6236" stroke-width="1.5"/>`
+      : `<rect x="${x*T+3}" y="${y*T+3}" width="54" height="54" rx="12" fill="${th.path}"/><circle cx="${x*T+18}" cy="${y*T+40}" r="2" fill="${th.pathDot}"/><circle cx="${x*T+42}" cy="${y*T+20}" r="2.4" fill="${th.pathDot}"/>`;
+    if (c === '~') flat += waterArt(x,y,th);
+    if (c === 'r' || c === 'b' || c === 'y') flat += colorTileArt(x,y,c);
+    if (c === 'G') marks += goalArt(x,y);
+    if (c === 'D') marks += benchArt(x,y);
+    if (c === '#') tall += theme === 'town' ? houseArt(x,y) : theme === 'beach' ? rockArt(x,y) : theme === 'forest' ? pineArt(x,y) : theme === 'castle' ? wallArt(x,y) : treeArt(x,y);
+    if (c === '*') tall += theme === 'town' ? planterArt(x,y) : theme === 'beach' ? umbrellaArt(x,y) : theme === 'forest' ? bushArt(x,y) : theme === 'castle' ? armorArt(x,y) : flowerArt(x,y);
+  }
+  for (let x=1;x<COLS;x++) grid += `<line x1="${x*T}" y1="0" x2="${x*T}" y2="360"/>`;
+  for (let y=1;y<ROWS;y++) grid += `<line x1="0" y1="${y*T}" x2="480" y2="${y*T}"/>`;
+  stage.innerHTML = base + flat +
+    `<g stroke="${th.grid}" stroke-opacity=".22" stroke-width="1.5" stroke-dasharray="4 4">${grid}</g>` +
+    marks + tall +
+    `<g id="lDoors"></g><g id="lFoot"></g><g id="lItems"></g><g id="lNpc"></g><g id="lMov"></g><g id="lAct"></g><g id="lFx"></g><g id="lHud"></g>`;
+  renderDoors(); renderNpcs(); renderItems(); renderMovers(); buildActors(); renderHud();
+}
+function renderDoors(){
+  const g = S.g, st = S.st; let h = '';
+  for (let y=0;y<ROWS;y++) for (let x=0;x<COLS;x++){
+    const c = g.map[y][x];
+    if (c === 'X' || c === 'Y') h += doorArt(x, y, c, doorOpen(c));
+    if (c === 'K' || c === 'J') h += buttonArt(x, y, c, Object.values(st.actors).some(a => a.x === x && a.y === y));
+  }
+  $('lDoors').innerHTML = h;
+}
+function doorOpen(ch){
+  const btn = ch === 'X' ? 'K' : 'J';
+  return Object.values(S.st.actors).some(a => tileAt(a.x, a.y) === btn || tileAt(a.x, a.y) === ch);
+}
+function renderItems(){
+  const st = S.st; let h = '';
+  const occupied = new Set(st.items.filter(i => !i.taken).map(i => i.x + ',' + i.y));
+  if (st.bone){
+    const shared = occupied.has(st.bone.x + ',' + st.bone.y);
+    h += `<g transform="translate(${st.bone.x*T + (shared?44:30)} ${st.bone.y*T + (shared?46:32)}) scale(${shared?.6:1})"><circle r="17" fill="#FFF6C8" opacity=".7" class="pulse"/>${boneArt()}</g>`;
+  }
+  for (const it of st.items) if (!it.taken) h += `<g transform="translate(${it.x*T+30} ${it.y*T+32})"><ellipse cx="0" cy="13" rx="12" ry="3.5" fill="#000" opacity=".13"/>${itemArt(it.kind)}</g>`;
+  $('lItems').innerHTML = h;
+}
+function renderNpcs(){
+  let h = '';
+  for (const n of S.g.npcs){
+    if (n.kind === 'cat') h += `<g id="npc-${n.id}" transform="translate(${n.x*T} ${n.y*T})"><g transform="translate(30 34) scale(-.5 .5) translate(-56 -52)">${catArt()}</g></g>`;
+    else h += `<g id="npc-${n.id}" transform="translate(${n.x*T} ${n.y*T})"><ellipse cx="30" cy="54" rx="15" ry="4" fill="#000" opacity=".13"/>${npcArt[n.kind]()}</g>`;
+  }
+  $('lNpc').innerHTML = h;
+}
+function renderMovers(){
+  $('lMov').innerHTML = S.st.movers.map(m => `<g id="mv-${m.id}" transform="translate(${m.x*T+30} ${m.y*T+34})">${crabArt()}</g>`).join('');
+}
+function renderHud(){
+  const st = S.st, L = curL(); let h = '';
+  const dog = st.actors.dog;
+  if (dog.bag.length){
+    h += `<rect x="6" y="6" width="${34 + dog.bag.length*30}" height="40" rx="12" fill="#fff" stroke="${INK}" stroke-width="2.5" opacity=".95"/><text x="13" y="33" font-size="18">🎒</text>`;
+    dog.bag.forEach((it,i) => h += `<g transform="translate(${52+i*30} 26) scale(.75)">${itemArt(it.kind)}</g>`);
+  }
+  if (st.actors.bird && st.actors.bird.bag.length){
+    const b = st.actors.bird;
+    h += `<rect x="6" y="50" width="${34 + b.bag.length*30}" height="36" rx="12" fill="#fff" stroke="${INK}" stroke-width="2.5" opacity=".95"/><text x="12" y="75" font-size="16">🐦</text>`;
+    b.bag.forEach((it,i) => h += `<g transform="translate(${50+i*30} 68) scale(.7)">${itemArt(it.kind)}</g>`);
+  }
+  (L.vars || []).forEach((v,i) => {
+    const txt = `${v}：${st.vars[v]}`, w = [...txt].length*15 + 22, x = 474 - w, y = 6 + i*34;
+    h += `<g><rect x="${x}" y="${y}" width="${w}" height="28" rx="8" fill="#FFF3E0" stroke="var(--c-var-d)" stroke-width="2.5"/>
+      <text x="${x + w/2}" y="${y+20}" text-anchor="middle" font-size="16" font-weight="bold" fill="#B85A00" font-family="Microsoft JhengHei,sans-serif">${esc(txt)}</text></g>`;
+  });
+  $('lHud').innerHTML = h;
+}
+function buildActors(){
+  let h = '';
+  for (const a of Object.values(S.st.actors)){
+    const bird = a.kind === 'bird';
+    h += `<g id="act-${a.id}"><ellipse cx="30" cy="54" rx="${bird?11:17}" ry="4.5" fill="#000" opacity=".15"/>
+      <g class="arrow"><path d="M23 -8 L35 0 L23 8 z" fill="${bird?'#8E5BC0':'#E8574A'}" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></g>
+      <g class="body"><g class="flip">${bird ? birdArt() : dogArt()}</g></g></g>`;
+  }
+  $('lAct').innerHTML = h;
+  Object.values(S.st.actors).forEach(drawActor);
+}
+function drawActor(a){
+  const g = $('act-' + a.id); if (!g) return;
+  const bird = a.kind === 'bird', sc = bird ? .44 : .56;
+  g.setAttribute('transform', `translate(${a.px*T} ${a.py*T})`);
+  g.querySelector('.arrow').setAttribute('transform', `translate(30 32) rotate(${a.ang})`);
+  g.querySelector('.body').setAttribute('transform', `translate(30 ${33 - a.hop - (bird?8:0)}) scale(${a.face*sc} ${sc}) translate(-58 -52)`);
+}
+function setDogFace(o){ const f = document.querySelector('#act-dog .flip'); if (f) f.innerHTML = dogArt(o); }
+function addFoot(a){
+  if (a.kind === 'bird') return;
+  $('lFoot').insertAdjacentHTML('beforeend', `<g transform="translate(${a.x*T+30} ${a.y*T+32}) rotate(${a.dir*90+90}) scale(.8)">${pawArt('#7A5A3A','.28')}</g>`);
+}
+
+/* ---------- 動畫工具 ---------- */
+function speed(){ return SPEED_MS[S.save.speed] || 380; }
+function chk(tok){ if (tok !== S.token) throw STOP; }
+function tween(ms, tok, fn){
+  return new Promise((res, rej) => {
+    const t0 = performance.now();
+    function f(now){
+      if (tok !== S.token) return rej(STOP);
+      const p = Math.min(1, (now - t0) / ms);
+      fn(p); if (p >= 1) res(); else requestAnimationFrame(f);
+    }
+    requestAnimationFrame(f);
+  });
+}
+const wait = (ms, tok) => tween(ms, tok, () => {});
+const ease = p => p < .5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2)/2;
+function bubbleSvg(cx, topY, text, color='#fff'){
+  const w = Math.max(56, [...text].length * 17 + 24), h = 34;
+  let x = cx - w/2; x = Math.max(4, Math.min(480 - w - 4, x));
+  let y = topY - h - 8; let flip = false;
+  if (y < 2){ y = topY + 66; flip = true; }
+  const tx = Math.max(x+12, Math.min(x+w-12, cx));
+  const tail = flip ? `M${tx-7} ${y} L${tx} ${y-9} L${tx+7} ${y}` : `M${tx-7} ${y+h} L${tx} ${y+h+9} L${tx+7} ${y+h}`;
+  return `<g><path d="${tail}" fill="${color}" stroke="${INK}" stroke-width="2.5"/>
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${color}" stroke="${INK}" stroke-width="2.5"/>
+    <path d="${tail}" fill="${color}" stroke="none" transform="translate(0 ${flip?2:-2})"/>
+    <text x="${x+w/2}" y="${y+23}" text-anchor="middle" font-size="16" font-weight="bold" fill="${INK}" font-family="Microsoft JhengHei,sans-serif">${esc(text)}</text></g>`;
+}
+async function showBubble(cx, topY, text, ms, tok, color){
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.innerHTML = bubbleSvg(cx, topY, text, color); $('lFx').appendChild(g);
+  try { await wait(ms, tok); } finally { g.remove(); }
+}
+function popText(x, y, text){
+  const g = document.createElementNS('http://www.w3.org/2000/svg','text');
+  g.setAttribute('x', x*T+30); g.setAttribute('y', y*T+4); g.setAttribute('text-anchor','middle');
+  g.setAttribute('font-size','16'); g.setAttribute('font-weight','bold'); g.setAttribute('fill','#A8740C');
+  g.setAttribute('stroke','#fff'); g.setAttribute('stroke-width','4'); g.setAttribute('paint-order','stroke');
+  g.textContent = text; $('lFx').appendChild(g);
+  const t0 = performance.now();
+  (function f(now){ const p = (now - t0)/900; g.setAttribute('y', y*T + 4 - p*20); g.setAttribute('opacity', 1 - Math.max(0,p-.5)*2);
+    if (p < 1) requestAnimationFrame(f); else g.remove(); })(t0);
+}
+
+/* =========================================================
+   執行程式
+   ========================================================= */
+function mkActor(id, kind, s){
+  return { id, kind, fly: kind === 'bird', x:s.x, y:s.y, dir:s.dir, px:s.x, py:s.y, ang:s.dir*90, face: s.dir === 2 ? -1 : 1, hop:0, bag:[] };
+}
+function resetStage(vi){
+  const L = curL();
+  S.token++; stopMovers();
+  if (vi !== undefined) S.vi = vi;
+  S.g = geo(L, S.vi);
+  const g = S.g;
+  const actors = { dog: mkActor('dog', 'dog', g.start) };
+  if (L.actors) actors.bird = mkActor('bird', 'bird', g.start2);
+  S.st = { actors, bone: g.bone ? {...g.bone} : null, gotBone:false, items: g.items.map(it => ({...it, taken:false})),
+    talked:new Set(), delivered:false, steps:0, idle:0, vars:{...(L.varInit || {})},
+    movers: g.movers.map(m => ({id:m.id, path:m.path, i:0, x:m.path[0][0], y:m.path[0][1]})), doorState:{} };
+  for (const v of (L.vars || [])) if (S.st.vars[v] === undefined) S.st.vars[v] = 0;
+  buildStage(); hideBanner(); clearMarks();
+  S.st.doorState = {X:doorOpen('X'), Y:doorOpen('Y')};
+}
+function blockedMsg(a, x, y){
+  const t = tileAt(x, y), th = themeOf(curL());
+  if (t === null) return a.kind === 'bird' ? '啾啾差點飛出地圖了！' : '汪汪差點走出地圖了！';
+  if (a.fly) return null;
+  if (t === '#') return th.wallMsg;
+  if (t === '*') return th.wall2Msg;
+  if (t === '~') return '汪汪不想掉進水裡！';
+  if ((t === 'X' || t === 'Y') && !doorOpen(t)) return '門還沒打開！';
+  const n = S.g.npcs.find(n => n.x === x && n.y === y);
+  if (n) return `前面有${NPC_INFO[n.kind]}擋住了！`;
+  return null;
+}
+function moverHit(){
+  const d = S.st.actors.dog;
+  return S.st.movers.some(m => m.x === d.x && m.y === d.y);
+}
+function updateDoors(){
+  const ns = {X:doorOpen('X'), Y:doorOpen('Y')};
+  if (ns.X !== S.st.doorState.X || ns.Y !== S.st.doorState.Y) sfx('door');
+  S.st.doorState = ns; renderDoors();
+}
+async function stepActor(ctx, b){
+  const a = ctx.a, [dx,dy] = DIRS[a.dir], nx = a.x + dx, ny = a.y + dy, ms = speed();
+  const bad = blockedMsg(a, nx, ny);
+  if (bad){
+    sfx('bump');
+    await tween(ms*.45, ctx.tok, p => { const k = Math.sin(p*Math.PI)*.28; a.px = a.x + dx*k; a.py = a.y + dy*k; drawActor(a); });
+    a.px = a.x; a.py = a.y; drawActor(a);
+    throw new Fail(bad, b.id);
+  }
+  addFoot(a); sfx('step'); S.st.anim++;
+  const ox = a.x, oy = a.y;
+  await tween(ms, ctx.tok, p => { const e = ease(p); a.px = ox + dx*e; a.py = oy + dy*e; a.hop = Math.sin(p*Math.PI)*(a.fly?10:6); drawActor(a); });
+  a.x = nx; a.y = ny; a.px = nx; a.py = ny; a.hop = 0; drawActor(a);
+  updateDoors();
+  if (S.st.bone && S.st.bone.x === nx && S.st.bone.y === ny){
+    S.st.bone = null; S.st.gotBone = true; sfx('bone'); renderItems();
+    popText(nx, ny, '🦴 金骨頭！');
+  }
+  if (a.id === 'dog' && moverHit()) throw new Fail('哎唷！被螃蟹夾到了！', b.id);
+  if (checkWin()) throw WIN;
+}
+async function turnActor(ctx, to){
+  const a = ctx.a, a0 = a.ang;
+  let d = ((to - a.dir) % 4 + 4) % 4; if (d === 3) d = -1;
+  const a1 = a.ang + d*90;
+  a.dir = to; sfx('turn'); S.st.anim++;
+  if (a.dir === 0) a.face = 1; if (a.dir === 2) a.face = -1;
+  if (d !== 0) await tween(speed()*.6, ctx.tok, p => { a.ang = a0 + (a1 - a0)*ease(p); drawActor(a); });
+  a.ang = a1; drawActor(a);
+}
+const adjacent = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
+async function doSay(ctx, text){
+  const a = ctx.a;
+  sfx('say'); S.st.anim++;
+  await showBubble(a.x*T+30, a.y*T+4, text, speed()*2.2, ctx.tok);
+  const n = S.g.npcs.find(n => n.talk && adjacent(n, a));
+  if (n){
+    const ok = n.answer === undefined || String(text).trim() === n.answer;
+    if (ok) S.st.talked.add(n.id);
+    sfx('say');
+    await showBubble(n.x*T+30, n.y*T+4, ok ? n.talk : n.wrong, Math.max(1400, speed()*4), ctx.tok, '#E9F3FF');
+  }
+}
+async function doPick(ctx, b){
+  const a = ctx.a, st = S.st, it = st.items.find(i => !i.taken && i.x === a.x && i.y === a.y);
+  if (!it) throw new Fail('這一格沒有東西可以撿喔！', b.id);
+  if (it.kind === 'mushroom') throw new Fail('汪汪撿到毒菇了！肚子好痛……', b.id);
+  it.taken = true; a.bag.push(it); sfx('pick'); renderItems(); renderHud(); S.st.anim++;
+  popText(a.x, a.y, '撿到' + ITEM_INFO[it.kind] + '！');
+  await tween(speed()*.7, ctx.tok, p => { a.hop = Math.sin(p*Math.PI)*10; drawActor(a); });
+  a.hop = 0; drawActor(a);
+}
+async function doDrop(ctx, b){
+  const a = ctx.a, st = S.st, L = curL(), g = S.g;
+  if (!a.bag.length) throw new Fail((a.kind === 'bird' ? '啾啾' : '汪汪') + '手上沒有東西可以放下！', b.id);
+  const it = a.bag.pop(); it.taken = false; it.x = a.x; it.y = a.y;
+  sfx('pick'); renderItems(); renderHud(); S.st.anim++;
+  await wait(speed()*.5, ctx.tok);
+  if (g.dropAt && g.dropAt.x === a.x && g.dropAt.y === a.y && L.win.deliver === it.id){
+    st.delivered = true;
+    const n = g.npcs.find(n => n.thanks);
+    if (n) await showBubble(n.x*T+30, n.y*T+4, n.thanks, Math.max(1600, speed()*4.5), ctx.tok, '#E9F3FF');
+  }
+}
+function evalBool(b, a){
+  if (!b) return false;
+  const st = S.st;
+  switch (b.type){
+    case 'wall': { const [dx,dy] = DIRS[a.dir]; return !!blockedMsg(a, a.x+dx, a.y+dy); }
+    case 'onItem': return st.items.some(i => !i.taken && i.x === a.x && i.y === a.y);
+    case 'color': return tileAt(a.x, a.y) === b.args.c;
+    case 'atGoal': return !!S.g.goal && a.x === S.g.goal.x && a.y === S.g.goal.y;
+    case 'cmp': { const v = st.vars[b.args.v] || 0, n = +b.args.n; return b.args.o === 'gt' ? v > n : b.args.o === 'lt' ? v < n : v === n; }
+  }
+  return false;
+}
+const allBags = () => Object.values(S.st.actors).flatMap(a => a.bag);
+function winChecks(){
+  const L = curL(), w = L.win, st = S.st, g = S.g, dog = st.actors.dog, bags = allBags();
+  const out = [];
+  if (w.talk) out.push([st.talked.has(w.talk), () => { const n = g.npcs.find(n => n.id === w.talk); return n.answer !== undefined ? `還沒有告訴${NPC_INFO[n.kind]}正確的數字喔！` : `還沒有跟${NPC_INFO[n.kind]}說話喔！`; }]);
+  const need = w.allItems ? g.items.filter(i => i.kind !== 'mushroom' && i.kind !== 'badge').map(i => i.id) : (w.items || []);
+  if (need.length) out.push([need.every(id => bags.some(it => it.id === id)), () => {
+    const miss = need.filter(id => !bags.some(it => it.id === id)).map(id => ITEM_INFO[g.items.find(i => i.id === id).kind]);
+    return `還沒撿到${[...new Set(miss)].join('、')}喔！`; }]);
+  if (w.dogHas) out.push([w.dogHas.every(id => dog.bag.some(it => it.id === id)), () => `汪汪還沒拿到${w.dogHas.map(id => ITEM_INFO[g.items.find(i => i.id === id).kind]).join('、')}喔！`]);
+  if (w.bagExact){ const n = bags.filter(i => i.kind === w.bagExact.kind).length;
+    out.push([n === w.bagExact.n, () => n > w.bagExact.n ? `${ITEM_INFO[w.bagExact.kind]}拿太多了！只能拿 ${w.bagExact.n} 個。` : `${ITEM_INFO[w.bagExact.kind]}要剛好拿 ${w.bagExact.n} 個喔！`]); }
+  if (w.deliver) out.push([st.delivered, () => '還沒把手帕放到閃亮的長椅上喔！']);
+  for (const vc of [w.varCount, w.varCount2]) if (vc){
+    const n = g.items.filter(i => i.kind === vc.kind).length;
+    out.push([st.vars[vc.v] === n, () => `變數「${vc.v}」是 ${st.vars[vc.v]}，可是應該是 ${n} 才對！`]);
+  }
+  if (w.varEq) out.push([st.vars[w.varEq.v] === w.varEq.n, () => `變數「${w.varEq.v}」是 ${st.vars[w.varEq.v]}，可是應該是 ${w.varEq.n} 才對！`]);
+  if (w.reach) out.push([g.goal && dog.x === g.goal.x && dog.y === g.goal.y, () => '汪汪還沒走到 🚩 喔！']);
+  return out;
+}
+function checkWin(){ return winChecks().every(c => c[0]); }
+function unmetMsg(){ const c = winChecks().find(c => !c[0]); return c ? c[1]() : ''; }
+
+function blockEls(id){ return document.querySelector(`#wsInner .blk[data-id="${id}"]`); }
+function mark(id, cls, on){ const e = blockEls(id); if (e) e.classList.toggle(cls, on); }
+function clearMarks(){ document.querySelectorAll('#wsInner .blk.running, #wsInner .blk.err').forEach(e => e.classList.remove('running','err')); }
+
+async function execList(list, ctx){ for (const b of list) await execBlock(b, ctx); }
+async function loopTick(ctx, before){
+  // 迴圈裡如果什麼動畫都沒有，就讓畫面喘口氣，避免當機
+  if (S.st.anim === before){ S.st.idle++; await new Promise(r => requestAnimationFrame(r)); chk(ctx.tok);
+    if (S.st.idle > 600) throw new Fail('程式卡住了！迴圈裡好像沒有讓角色動起來的積木。'); }
+}
+async function execBlock(b, ctx){
+  chk(ctx.tok);
+  if (isBool(b.type)) return;
+  if (++S.st.steps > 6000) throw new Fail('程式跑太久了！是不是一直重複停不下來？', b.id);
+  mark(b.id, 'running', true);
+  const a = ctx.a;
+  try {
+    switch (b.type){
+      case 'move1': await stepActor(ctx, b); break;
+      case 'moveN': for (let i=0;i<b.args.n;i++) await stepActor(ctx, b); break;
+      case 'right': await turnActor(ctx, (a.dir+1)%4); break;
+      case 'left':  await turnActor(ctx, (a.dir+3)%4); break;
+      case 'face':  await turnActor(ctx, +b.args.d); break;
+      case 'say':   await doSay(ctx, String(b.args.t || '').trim() || '…'); break;
+      case 'sayVar': await doSay(ctx, String(S.st.vars[b.args.v] ?? 0)); break;
+      case 'pick':  await doPick(ctx, b); break;
+      case 'drop':  await doDrop(ctx, b); break;
+      case 'repeat': for (let i=0;i<b.args.n;i++){ const s0 = S.st.anim; await execList(b.body, ctx); await loopTick(ctx, s0); } break;
+      case 'forever': for (;;){ const s0 = S.st.anim; await execList(b.body, ctx); await loopTick(ctx, s0); if (++S.st.steps > 6000) throw new Fail('程式跑太久了！', b.id); } break;
+      case 'until': while (!evalBool(b.slots.c, a)){ const s0 = S.st.anim; await execList(b.body, ctx); await loopTick(ctx, s0); if (++S.st.steps > 6000) throw new Fail('程式跑太久了！', b.id); } break;
+      case 'if': if (evalBool(b.slots.c, a)) await execList(b.body, ctx); break;
+      case 'ifelse': await execList(evalBool(b.slots.c, a) ? b.body : b.body2, ctx); break;
+      case 'setVar': S.st.vars[b.args.v] = +b.args.n; sfx('var'); renderHud(); await wait(speed()*.25, ctx.tok); break;
+      case 'chgVar': S.st.vars[b.args.v] = (S.st.vars[b.args.v] || 0) + +b.args.n; sfx('var'); renderHud(); await wait(speed()*.25, ctx.tok); break;
+      case 'bcast': broadcast(b.args.m, ctx.tok); await wait(speed()*.2, ctx.tok); break;
+    }
+    if (['right','left','face','pick','drop','say','sayVar'].includes(b.type)) await wait(speed()*.15, ctx.tok);
+  } finally { mark(b.id, 'running', false); }
+  if (checkWin()) throw WIN;
+}
+
+/* ---------- 執行緒（多角色、廣播、按鍵） ---------- */
+let RUN = null;
+function spawn(list, actorId, tok, key){
+  if (!RUN || RUN.tok !== tok) return;
+  if (key){ if (RUN.busy.has(key)) return; RUN.busy.add(key); }
+  const ctx = {a:S.st.actors[actorId], tok};
+  const p = execList(list, ctx).catch(e => endRun(e)).finally(() => {
+    if (!RUN || RUN.tok !== tok) return;
+    RUN.threads.delete(p);
+    if (key){ RUN.busy.delete(key);
+      if (key.startsWith('k:') && RUN.queued && !RUN.result){ const q = RUN.queued; RUN.queued = null; pressKey(q); } }
+  });
+  RUN.threads.add(p);
+}
+function endRun(e){
+  if (!RUN || RUN.result) return;
+  RUN.result = e; RUN.done();
+}
+function broadcast(msg, tok){
+  for (const [aid, stacks] of Object.entries(S.sc)){
+    if (!S.st.actors[aid]) continue;
+    for (const s of stacks) if (s.blocks[0] && s.blocks[0].type === 'recv' && s.blocks[0].args.m === msg) spawn(s.blocks.slice(1), aid, tok, 'r:' + s.blocks[0].id);
+  }
+}
+function pressKey(k){
+  if (!RUN || !curL().keys) return;
+  // 一次只做一個按鍵的動作；動作中再按，就排隊等上一個做完（只記住最後一個）
+  if ([...RUN.busy].some(x => x.startsWith('k:'))){ RUN.queued = k; return; }
+  for (const [aid, stacks] of Object.entries(S.sc)){
+    if (!S.st.actors[aid]) continue;
+    for (const s of stacks) if (s.blocks[0] && s.blocks[0].type === 'key' && s.blocks[0].args.k === k) spawn(s.blocks.slice(1), aid, RUN.tok, 'k:' + s.blocks[0].id);
+  }
+}
+let moverTimer = null;
+function startMovers(tok){
+  if (!S.st.movers.length) return;
+  moverTimer = setInterval(() => {
+    if (tok !== S.token){ stopMovers(); if (RUN && RUN.tok === tok) endRun(STOP); return; }
+    for (const m of S.st.movers){ m.i = (m.i + 1) % m.path.length; [m.x, m.y] = m.path[m.i]; const el = $('mv-' + m.id); if (el) el.setAttribute('transform', `translate(${m.x*T+30} ${m.y*T+34})`); }
+    if (moverHit()){ sfx('bump'); endRun(new Fail('哎唷！被螃蟹夾到了！')); }
+  }, 700);
+}
+function stopMovers(){ if (moverTimer){ clearInterval(moverTimer); moverTimer = null; } }
+async function runOnce(){
+  const L = curL(), tok = S.token;
+  let done; const endP = new Promise(r => done = r);
+  RUN = {tok, threads:new Set(), busy:new Set(), result:null, done};
+  for (const [aid, stacks] of Object.entries(S.sc)){
+    if (!S.st.actors[aid]) continue;
+    for (const s of stacks) if (s.blocks[0] && s.blocks[0].type === 'flag') spawn(s.blocks.slice(1), aid, tok);
+  }
+  if (L.keys){ startMovers(tok); await endP; }
+  else {
+    while (!RUN.result && RUN.threads.size) await Promise.race([endP, Promise.all([...RUN.threads])]);
+  }
+  const r = RUN.result; RUN = null; stopMovers();
+  if (r === WIN || r === STOP || r instanceof Fail) return r;
+  if (r) { console.error(r); return new Fail('程式出了點問題，請再試一次。'); }
+  return checkWin() ? WIN : null;
+}
+function hasStarter(){
+  const L = curL();
+  return Object.values(S.sc).some(stacks => stacks.some(s => s.blocks[0] && s.blocks[0].type === (L.keys ? 'key' : 'flag')))
+      || Object.values(S.sc).some(stacks => stacks.some(s => s.blocks[0] && s.blocks[0].type === 'flag'));
+}
+async function run(){
+  if (S.running) return;
+  const L = curL();
+  resetStage(0);
+  if (!hasStarter()){ banner('info', L.keys ? '要先做一個<b>「當按下 ○○ 鍵」</b>，下面接積木喔！' : '要把積木接在<b>「當🚩被點擊」</b>下面才會執行喔！'); return; }
+  if (countAll() === 0){ banner('info', '事件積木下面還沒有積木喔！把積木拖過去黏起來。'); return; }
+  S.running = true; setRunUI(true); S.gotBoneAny = false;
+  if (L.keys){ banner('info', '🎮 用鍵盤方向鍵或下面的按鈕操控汪汪！'); setTimeout(() => { if (S.running) hideBanner(); }, 2200); }
+  const nv = L.variants ? L.variants.length : 1;
+  let res = null;
+  for (let vi = 0; vi < nv; vi++){
+    if (vi > 0) resetStage(vi);
+    if (nv > 1) banner('info', `🗺️ 地圖 ${vi+1} / ${nv}`);
+    res = await runOnce();
+    if (S.st.gotBone) S.gotBoneAny = true;
+    if (res !== WIN) break;
+    if (vi < nv - 1){
+      sfx('win'); banner('good', `✅ 地圖 ${vi+1} 過關！換下一張地圖……`);
+      const tok = S.token;
+      try { await wait(1300, tok); } catch(e){ res = STOP; break; }
+    }
+  }
+  S.token++;
+  S.running = false; setRunUI(false); clearMarks();
+  const tag = nv > 1 ? `（地圖 ${S.vi+1}）` : '';
+  if (res === WIN){ hideBanner(); onWin(); }
+  else if (res instanceof Fail){
+    sfx('fail'); setDogFace({});
+    if (res.id) showErrBlock(res.id);
+    banner('fail', '😵 ' + res.msg + tag + (res.id ? '<br><small>出錯的積木已經用紅色標出來了。</small>' : ''), true);
+  } else if (res === STOP){ hideBanner(); }
+  else { sfx('fail'); banner('info', '🐶 程式跑完了…… ' + unmetMsg() + tag, true); }
+}
+function showErrBlock(id){
+  for (const [aid, stacks] of Object.entries(S.sc)){
+    if (stacks.some(s => findIn(s.blocks, id))){ if (aid !== S.cur){ S.cur = aid; renderTabs(); renderWS(); } break; }
+  }
+  mark(id, 'err', true);
+}
+function stopRun(){ if (S.running){ S.token++; endRun(STOP); } }
+function setRunUI(on){
+  $('runBtn').disabled = on; $('ws').classList.toggle('locked', on);
+  $('palette').style.pointerEvents = on ? 'none' : '';
+}
+function banner(type, html, retry){
+  $('banner').innerHTML = `<div class="banner ${type}"><span class="msg">${html}</span>${retry ? '<button class="btn small" id="bnRetry">↺ 再試一次</button>' : ''}</div>`;
+  if (retry) $('bnRetry').onclick = () => resetStage(0);
+}
+function hideBanner(){ $('banner').innerHTML = ''; }
+
+/* ---------- 過關 ---------- */
+async function onWin(){
+  const L = curL(), st = S.st, used = countAll(), dog = st.actors.dog;
+  let stars = 1;
+  if (used <= L.target) stars = 2;
+  if (stars === 2 && (S.gotBoneAny || st.gotBone) && !S.hintUsed) stars = 3;
+  sfx('win'); setDogFace({happy:true});
+  const tok = ++S.token;
+  for (let i=0;i<14;i++){
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const ang = Math.random()*Math.PI*2, r = 40 + Math.random()*70, cx = dog.x*T+30, cy = dog.y*T+30;
+    g.innerHTML = starShape(0,0,7,3, ['#FFD54F','#F48FB1','#8FD0E8','#A5D6A7'][i%4], '#fff');
+    $('lFx').appendChild(g);
+    const t0 = performance.now();
+    (function f(now){ const p = Math.min(1,(now-t0)/900);
+      g.setAttribute('transform', `translate(${cx+Math.cos(ang)*r*p} ${cy+Math.sin(ang)*r*p - 30*Math.sin(p*Math.PI)}) rotate(${p*360})`);
+      g.setAttribute('opacity', 1-p*p); if (p<1) requestAnimationFrame(f); else g.remove(); })(t0);
+  }
+  try {
+    await tween(700, tok, p => { dog.hop = Math.abs(Math.sin(p*Math.PI*2))*14; drawActor(dog); });
+    const n = S.g.npcs.find(n => n.kind === 'cat');
+    if (L.boss && n){
+      const cat = $('npc-cat');
+      await showBubble(n.x*T+30, n.y*T+4, L.scene === 5 ? '好啦好啦，我投降！' : '哼！下一站見啦～', 1200, tok, '#F1E6FF');
+      if (L.scene < 5) await tween(800, tok, p => { cat.setAttribute('transform', `translate(${n.x*T + p*140} ${n.y*T - Math.sin(p*Math.PI)*40})`); cat.setAttribute('opacity', 1-p); });
+    }
+  } catch(e) {}
+  dog.hop = 0; drawActor(dog);
+  const prev = S.save.progress[L.id], first = !prev;
+  const better = !prev || stars > prev.stars || (stars === prev.stars && used < prev.blocks);
+  if (better){
+    S.save.progress[L.id] = {stars, blocks:used};
+    if (ACC && ACC.cloud){ S.save.pending.push({lv:L.id, stars, blocks:used, hint:S.hintUsed ? 1 : 0}); flushCloud(); }
+  }
+  writeSave();
+  showWinDlg(stars, used, first);
+}
+function showWinDlg(stars, used, first){
+  const L = curL(), notes = [];
+  if (used > L.target) notes.push(`⭐⭐ 用 <b>${L.target}</b> 塊以內的積木可以拿到第 2 顆星（這次用了 ${used} 塊）`);
+  if (!S.gotBoneAny && !S.st.gotBone) notes.push('⭐⭐⭐ 再撿到<b>金骨頭</b>，可以拿到第 3 顆星');
+  if (S.hintUsed && stars < 3) notes.push('⭐⭐⭐ 不看提示，才拿得到第 3 顆星');
+  const best = S.save.progress[L.id].stars;
+  const isBoss = L.no === 10;
+  openDlg(`<h2>🎉 破案了！</h2>
+    <div class="bigstars">${[0,1,2].map(i => `<span class="${i<stars?'':'off'}" style="animation-delay:${.15+i*.25}s">⭐</span>`).join('')}</div>
+    <p>案件 ${L.id}「${L.name}」　用了 ${used} 塊積木${best > stars ? `　（最佳紀錄 ${best} 星）` : ''}</p>
+    ${notes.length ? `<div class="notes">${notes.join('<br>')}</div>` : '<p><b>完美破案！你是名偵探！</b></p>'}
+    <div class="cluebox">${clueIcon(L.clue.icon, 64)}<div><b>${first ? '🔍 獲得新線索！' : '🔍 線索'}「${L.clue.name}」</b><br>${L.clue.desc}</div></div>
+    <div class="row"><button class="btn" id="wAgain">↺ 再挑戰</button><button class="btn" id="wMap">🗺️ 地圖</button>
+    <button class="btn main" id="wNext">${isBoss ? '看故事 ▶' : '下一案 ▶'}</button></div>`);
+  $('wAgain').onclick = () => { closeDlg(); resetStage(0); };
+  $('wMap').onclick = () => { closeDlg(); openMap(); };
+  $('wNext').onclick = () => {
+    closeDlg();
+    if (isBoss){
+      S.save.seen['end' + L.scene] = true; writeSave();
+      if (L.scene < 5) mapScene = L.scene + 1;
+      openBook(END_PAGES[L.scene], openMap);
+    } else startLevel(S.li + 1);
+  };
+}
+
+/* =========================================================
+   積木區：畫積木、拖拉
+   ========================================================= */
+let hostMap = new WeakMap(), slotMap = new WeakMap();
+const wsInner = $('wsInner'), wsEl = $('ws'), palEl = $('palette');
+const stacks = () => S.sc[S.cur];
+function blockEl(b, live){
+  const d = BLOCKS[b.type];
+  const el = document.createElement('div');
+  el.className = 'blk cat-' + d.cat + (d.hat ? ' hat' : '') + (d.c ? ' c' : '') + (d.cap ? ' cap' : '') + (d.bool ? ' bool' : '');
+  el.dataset.id = b.id;
+  let head = el;
+  if (d.c){ head = document.createElement('div'); head.className = 'c-head'; el.appendChild(head); }
+  for (const part of d.label){
+    if (typeof part === 'string'){ const s = document.createElement('span'); s.textContent = part; head.appendChild(s); }
+    else if (part.flag) head.insertAdjacentHTML('beforeend', FLAG_ICON);
+    else if (part.slot){
+      const sl = document.createElement('span'); sl.className = 'slot';
+      slotMap.set(sl, {owner:b, key:part.slot});
+      const inner = b.slots && b.slots[part.slot];
+      if (inner){ sl.classList.add('full'); sl.appendChild(blockEl(inner, live)); }
+      head.appendChild(sl);
+    }
+    else if (part.sel){
+      const sel = document.createElement('select'), key = part.sel;
+      for (const [v, t] of optsOf(part)){ const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); }
+      sel.value = b.args[key];
+      if (sel.value !== String(b.args[key])) { b.args[key] = sel.value; }
+      if (!live){ sel.disabled = true; sel.tabIndex = -1; }
+      sel.addEventListener('change', () => { b.args[key] = sel.value; scriptChanged(); });
+      head.appendChild(sel);
+    } else {
+      const key = argKey(part), inp = document.createElement('input');
+      inp.className = part.text ? 'txt' : 'num'; inp.value = b.args[key];
+      if (part.num) inp.inputMode = 'numeric';
+      inp.maxLength = part.text ? 12 : 3;
+      if (!live){ inp.readOnly = true; inp.tabIndex = -1; }
+      const fit = () => { if (part.text) inp.style.width = Math.max(50, [...inp.value].length*16 + 18) + 'px'; };
+      fit();
+      inp.addEventListener('input', () => {
+        if (part.num){ const v = parseInt(inp.value, 10); if (!isNaN(v)) b.args[key] = Math.max(part.min, Math.min(part.max, v)); }
+        else b.args[key] = inp.value.slice(0, 12);
+        fit();
+      });
+      inp.addEventListener('change', () => {
+        if (part.num){ let v = parseInt(inp.value, 10); if (isNaN(v)) v = part.def; v = Math.max(part.min, Math.min(part.max, v)); b.args[key] = v; inp.value = v; }
+        scriptChanged();
+      });
+      inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') inp.blur(); });
+      head.appendChild(inp);
+    }
+  }
+  if (d.c){
+    const addBody = (list) => {
+      const body = document.createElement('div'); body.className = 'c-body list-host';
+      hostMap.set(body, list);
+      list.forEach(cb => body.appendChild(blockEl(cb, live)));
+      el.appendChild(body);
+    };
+    addBody(b.body);
+    if (d.c2){ const mid = document.createElement('div'); mid.className = 'c-mid'; mid.textContent = '否則'; el.appendChild(mid); addBody(b.body2); }
+    const foot = document.createElement('div'); foot.className = 'c-foot'; el.appendChild(foot);
+  }
+  return el;
+}
+function renderWS(){
+  hostMap = new WeakMap(); slotMap = new WeakMap(); wsInner.innerHTML = '';
+  for (const s of stacks()){
+    const el = document.createElement('div'); el.className = 'stack list-host';
+    el.style.left = s.x + 'px'; el.style.top = s.y + 'px';
+    hostMap.set(el, s.blocks);
+    s.blocks.forEach(b => el.appendChild(blockEl(b, true)));
+    wsInner.appendChild(el);
+  }
+  updateCounter();
+}
+function renderTabs(){
+  const L = curL(), t = $('actTabs');
+  if (!L.actors){ t.classList.remove('on'); t.innerHTML = ''; return; }
+  t.classList.add('on');
+  t.innerHTML = [['dog','🐶 汪汪的程式'],['bird','🐦 啾啾的程式']].map(([id,n]) => `<button data-a="${id}" class="${S.cur===id?'on':''}">${n}</button>`).join('');
+  t.querySelectorAll('button').forEach(b => b.onclick = () => { if (S.running) return; S.cur = b.dataset.a; renderTabs(); renderWS(); });
+}
+function renderPalette(){
+  const L = curL(); palEl.innerHTML = '';
+  for (const [cat, name, col] of CATS){
+    const types = L.blocks.filter(t => BLOCKS[t].cat === cat);
+    if (!types.length) continue;
+    palEl.insertAdjacentHTML('beforeend', `<div class="pcat"><i style="background:${col}"></i>${name}</div>`);
+    for (const t of types){
+      const w = document.createElement('div'); w.className = 'pwrap pal';
+      const el = blockEl(newBlock(t), false); el.dataset.type = t;
+      w.appendChild(el); palEl.appendChild(w);
+    }
+  }
+}
+function countBlock(b){
+  let n = isHat(b.type) ? 0 : 1;
+  if (b.slots) for (const k in b.slots) if (b.slots[k]) n += countBlock(b.slots[k]);
+  if (b.body) n += countList(b.body);
+  if (b.body2) n += countList(b.body2);
+  return n;
+}
+function countList(list){ return list.reduce((a,b) => a + countBlock(b), 0); }
+function countAll(){
+  let n = 0;
+  for (const st of Object.values(S.sc)) for (const s of st) if (s.blocks[0] && isHat(s.blocks[0].type)) n += countList(s.blocks);
+  return n;
+}
+function updateCounter(){
+  const L = curL(), n = countAll(), c = $('counter');
+  c.textContent = `積木 ${n} 塊 ／ 目標 ${L.target} 塊以內`;
+  c.className = n === 0 ? '' : (n <= L.target ? 'ok' : 'over');
+}
+function scriptChanged(){
+  S.save.scripts[curL().id] = S.sc;
+  writeSave(); updateCounter();
+}
+function findIn(list, id){
+  for (let i=0;i<list.length;i++){
+    if (list[i].id === id) return {list, i};
+    const r = findInBlock(list[i], id); if (r) return r;
+  }
+  return null;
+}
+function findInBlock(b, id){
+  if (b.slots) for (const k in b.slots){ const s = b.slots[k]; if (s){ if (s.id === id) return {owner:b, key:k}; const r = findInBlock(s, id); if (r) return r; } }
+  if (b.body){ const r = findIn(b.body, id); if (r) return r; }
+  if (b.body2){ const r = findIn(b.body2, id); if (r) return r; }
+  return null;
+}
+function findBlock(id){ for (const s of stacks()){ const r = findIn(s.blocks, id); if (r) return {...r, stack:s}; } return null; }
+
+let drag = null;
+function onDown(e){
+  if (S.running) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (e.target.closest('input,select') && !e.target.closest('.pal')) return;
+  const el = e.target.closest('.blk'); if (!el) return;
+  e.preventDefault();
+  if (document.activeElement && /INPUT|SELECT/.test(document.activeElement.tagName)) document.activeElement.blur();
+  const r = el.getBoundingClientRect();
+  drag = { pending:true, fromPal: !!el.closest('.pal'), type: el.dataset.type, id: el.dataset.id,
+           sx:e.clientX, sy:e.clientY, offX:e.clientX - r.left, offY:e.clientY - r.top };
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+}
+function startDrag(){
+  let payload;
+  if (drag.fromPal) payload = [newBlock(drag.type)];
+  else {
+    const f = findBlock(drag.id); if (!f){ drag = null; return; }
+    if (f.owner){ payload = [f.owner.slots[f.key]]; f.owner.slots[f.key] = null; }
+    else {
+      payload = f.list.splice(f.i);
+      if (!f.stack.blocks.length) stacks().splice(stacks().indexOf(f.stack), 1);
+    }
+    renderWS();
+  }
+  drag.payload = payload; drag.pending = false;
+  const g = document.createElement('div'); g.className = 'ghost';
+  payload.forEach(b => g.appendChild(blockEl(b, false)));
+  document.body.appendChild(g); drag.ghost = g;
+  hideBanner();
+}
+const inRect = (el, e) => { const r = el.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
+function onMove(e){
+  if (!drag) return;
+  if (drag.pending){
+    if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 5) return;
+    startDrag(); if (!drag) return;
+  }
+  const gx = e.clientX - drag.offX, gy = e.clientY - drag.offY;
+  drag.ghost.style.left = gx + 'px'; drag.ghost.style.top = gy + 'px';
+  const overPal = inRect(palEl, e);
+  palEl.classList.toggle('trash', overPal && !drag.fromPal);
+  drag.target = overPal ? null : findTarget(gx, gy);
+  const ind = $('ind');
+  if (drag.target){
+    ind.style.display = 'block'; ind.classList.toggle('slotind', !!drag.target.slot);
+    ind.style.left = drag.target.px + 'px'; ind.style.top = (drag.target.py - (drag.target.slot ? 0 : 3)) + 'px';
+  } else ind.style.display = 'none';
+}
+function findTarget(gx, gy){
+  const first = drag.payload[0];
+  let best = null, bs = 1e9;
+  if (isBool(first.type)){
+    wsInner.querySelectorAll('.slot:not(.full)').forEach(sl => {
+      const r = sl.getBoundingClientRect(), dx = Math.abs(gx - r.left), dy = Math.abs(gy - r.top);
+      if (dx < 70 && dy < 32){ const sc = dx + dy*2; if (sc < bs){ bs = sc; best = {slot:slotMap.get(sl), px:r.left, py:r.top}; } }
+    });
+    return best;
+  }
+  if (isHat(first.type)) return null;
+  wsInner.querySelectorAll('.list-host').forEach(host => {
+    const list = hostMap.get(host); if (!list) return;
+    if (list.length && isBool(list[0].type)) return;
+    const kids = [...host.children].filter(c => c.classList.contains('blk'));
+    const isStack = host.classList.contains('stack'), hr = host.getBoundingClientRect();
+    for (let i = isStack ? 1 : 0; i <= kids.length; i++){
+      if (i > 0 && BLOCKS[list[i-1].type].cap) continue;
+      let px, py;
+      if (i === 0){ px = hr.left; py = hr.top; }
+      else { const r = kids[i-1].getBoundingClientRect(); px = r.left; py = r.bottom; }
+      const dx = Math.abs(gx - px), dy = Math.abs(gy - py);
+      if (dx < 90 && dy < 38){ const sc = dx + dy*2; if (sc < bs){ bs = sc; best = {list, index:i, px, py}; } }
+    }
+  });
+  return best;
+}
+function onUp(e){
+  window.removeEventListener('pointermove', onMove);
+  window.removeEventListener('pointerup', onUp);
+  window.removeEventListener('pointercancel', onUp);
+  if (!drag) return;
+  if (drag.pending){ drag = null; return; }
+  const d = drag; drag = null;
+  d.ghost.remove(); $('ind').style.display = 'none'; palEl.classList.remove('trash');
+  if (inRect(palEl, e)){ /* 丟回積木庫＝刪除 */ }
+  else if (d.target && d.target.slot) d.target.slot.owner.slots[d.target.slot.key] = d.payload[0];
+  else if (d.target) d.target.list.splice(d.target.index, 0, ...d.payload);
+  else {
+    const wr = wsEl.getBoundingClientRect();
+    let x = e.clientX - d.offX - wr.left + wsEl.scrollLeft, y = e.clientY - d.offY - wr.top + wsEl.scrollTop;
+    if (!inRect(wsEl, e)){ if (d.fromPal){ renderWS(); return; } x = 30; y = 30 + stacks().length*20; }
+    stacks().push({id:uid(), x:Math.max(6, Math.round(x)), y:Math.max(6, Math.round(y)), blocks:d.payload});
+  }
+  renderWS(); scriptChanged();
+}
+palEl.addEventListener('pointerdown', onDown);
+wsInner.addEventListener('pointerdown', onDown);
+
+function initialScripts(L){
+  const sc = {dog:[]};
+  if (L.actors) sc.bird = [];
+  const pre = L.preset || {};
+  for (const aid of Object.keys(sc)){
+    const srcs = pre[aid] || (L.keys ? [] : ['flag']);
+    srcs.forEach((src, k) => sc[aid].push({id:uid(), x:40 + k*12, y:30 + k*170, blocks:parseScript(src)}));
+  }
+  return sc;
+}
+function reviveIds(b){ b.id = uid(); if (b.slots) for (const k in b.slots) if (b.slots[k]) reviveIds(b.slots[k]); (b.body||[]).forEach(reviveIds); (b.body2||[]).forEach(reviveIds); }
+
+/* =========================================================
+   畫面切換
+   ========================================================= */
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); }
+function openDlg(html, wide){ $('dlg').innerHTML = html; $('dlg').classList.toggle('wide', !!wide); $('modal').classList.add('on'); }
+function closeDlg(){ $('modal').classList.remove('on'); }
+function okDlg(title, msg){ openDlg(`<h2>${title}</h2><p>${msg}</p><div class="row"><button class="btn main" id="dOk">好</button></div>`); $('dOk').onclick = closeDlg; }
+
+function startLevel(i){
+  if (!levelOpen(i)) return;
+  stopRun();
+  S.li = i; const L = curL();
+  S.hintUsed = false; S.cur = 'dog'; S.vi = 0;
+  const saved = S.save.scripts[L.id];
+  let sc = null;
+  if (saved){
+    sc = JSON.parse(JSON.stringify(Array.isArray(saved) ? {dog:saved} : saved));
+    for (const st of Object.values(sc)) for (const s of st){ s.id = uid(); s.blocks.forEach(reviveIds); }
+    if (L.actors && !sc.bird) sc.bird = [];
+  }
+  S.sc = sc || initialScripts(L);
+  const sc0 = sceneOf(L);
+  $('gTitle').innerHTML = `${L.boss ? '🐱' : '📁'} ${sc0.name}・案件 ${L.id}「${L.name}」`;
+  $('cTag').textContent = L.boss ? '關主案件' : '案件說明';
+  $('cStory').innerHTML = L.story;
+  $('cReq').innerHTML = `<span>⭐ 破案</span><span>⭐⭐ 積木 ${L.target} 塊以內（事件積木不算）</span><span>⭐⭐⭐ 再撿到金骨頭🦴（不看提示）</span>`;
+  $('tip').innerHTML = `<span>💡</span><span>${L.tip}</span>`;
+  $('runBtn').innerHTML = L.keys ? '🎮 開始操控' : FLAG_ICON.replace(/width="20" height="20"/, 'width="26" height="26"') + ' 執行';
+  $('keypad').classList.toggle('on', !!L.keys);
+  renderTabs(); renderPalette(); renderWS(); resetStage(0);
+  wsEl.scrollTop = 0; wsEl.scrollLeft = 0;
+  show('game');
+  const cat = S.g.npcs.find(n => n.taunt);
+  if (cat){ const tok = S.token; setTimeout(() => { if (S.token === tok && !S.running) showBubble(cat.x*T+30, cat.y*T+4, cat.taunt, 1800, tok, '#F1E6FF').catch(()=>{}); }, 500); }
+}
+function showHint(){
+  const L = curL();
+  const step2 = () => {
+    openDlg(`<h2>💡 提示 2</h2><div class="hintbox">${L.hint2}</div><div class="row"><button class="btn main" id="hOk">知道了</button></div>`);
+    $('hOk').onclick = closeDlg;
+  };
+  openDlg(`<h2>💡 提示</h2><p style="color:var(--coral-d)">看提示的話，這次就拿不到第 3 顆星喔！</p>
+    <div class="row"><button class="btn" id="hNo">不看了</button><button class="btn main" id="hYes">看提示</button></div>`);
+  $('hNo').onclick = closeDlg;
+  $('hYes').onclick = () => {
+    S.hintUsed = true;
+    openDlg(`<h2>💡 提示 1</h2><div class="hintbox">${L.hint1}</div>
+      <div class="row"><button class="btn" id="h2">還是不會？看提示 2</button><button class="btn main" id="hOk">知道了</button></div>`);
+    $('hOk').onclick = closeDlg; $('h2').onclick = step2;
+  };
+}
+
+/* ---------- 地圖 ---------- */
+let mapScene = 1;
+const NODE_POS = [[90,330],[200,262],[318,318],[430,248],[350,150],[470,92],[595,150],[690,252],[800,196],[880,92]];
+function openMap(){
+  const n = totalStars();
+  $('mWho').textContent = ACC && !ACC.guest ? `${ACC.cls} 班 ${ACC.seat} 號 ${ACC.name || ''}` : '訪客';
+  $('mRank').textContent = rankName(n);
+  $('mStars').textContent = `⭐ ${n} / 150`;
+  $('mBoard').style.display = ACC && ACC.cloud ? '' : 'none';
+  setCloud(S.save.pending.length ? 'wait' : 'ok');
+  if (sceneLock(mapScene)) mapScene = 1;
+  $('mTabs').innerHTML = SCENES.map(s => { const lock = sceneLock(s.no);
+    return `<button class="tab ${s.no===mapScene?'on':''} ${lock?'lock':''}" data-s="${s.no}">${lock ? '🔒' : s.icon} ${s.no}. ${s.name}</button>`; }).join('');
+  $('mTabs').querySelectorAll('.tab').forEach(b => b.onclick = () => {
+    const sc = SCENES[+b.dataset.s - 1], lock = sceneLock(sc.no);
+    if (lock){ okDlg(`🔒 ${sc.icon} ${sc.name}`, lock); return; }
+    mapScene = sc.no; openMap();
+  });
+  $('mapArt').innerHTML = sceneMapSvg(mapScene);
+  $('mapArt').querySelectorAll('.node').forEach(g => g.onclick = () => { const i = +g.dataset.i; if (levelOpen(i)) startLevel(i); });
+  show('map');
+}
+function mapBg(theme){
+  const sky = {park:['#CBEBF7','#EAF6E0'], town:['#CDE3F5','#F3EBDD'], beach:['#BFE6F7','#FFF3D6'], forest:['#C9E3C0','#E4F0D6'], castle:['#D6D0E8','#EEE9F3']}[theme];
+  const land = {park:['#CDE6A5','#BFDD93'], town:['#E9E1D0','#DCD2BD'], beach:['#F5E6B8','#EAD7A0'], forest:['#AFCF8C','#98BF74'], castle:['#DAD4C8','#CBC3B4']}[theme];
+  let deco = '';
+  const spots = [[40,90],[150,60],[250,110],[560,300],[640,340],[760,330],[960,250],[30,220],[960,40],[540,40]];
+  spots.forEach(([x,y],i) => {
+    const fn = {park:treeArt, town:houseArt, beach:(i%2?rockArt:umbrellaArt), forest:pineArt, castle:(i%3?armorArt:wallArt)}[theme];
+    deco += `<g transform="translate(${x-30} ${y-40}) scale(1.1)">${fn(i,i*3).replace(/translate\([^)]*\)/,'translate(0 0)')}</g>`;
+  });
+  if (theme === 'beach') deco += `<path d="M0 360 q250 -30 500 0 t500 0 V420 H0z" fill="#6FB8E0"/><path d="M60 380 q20 -8 40 0 M400 372 q20 -8 40 0 M760 385 q20 -8 40 0" stroke="#fff" stroke-width="3" fill="none"/>`;
+  if (theme === 'park') deco += `<ellipse cx="150" cy="170" rx="70" ry="30" fill="#93CDEB" stroke="#6FAFD0" stroke-width="3"/>`;
+  if (theme === 'town') deco += `<ellipse cx="150" cy="175" rx="55" ry="26" fill="#93CDEB" stroke="#8A7A60" stroke-width="4"/><path d="M150 175 v-30" stroke="#93CDEB" stroke-width="6"/>`;
+  if (theme === 'forest') deco += `<path d="M0 190 q120 30 240 -10 t260 20" fill="none" stroke="#7FC0D8" stroke-width="16" stroke-linecap="round"/>`;
+  if (theme === 'castle') deco += `<g transform="translate(860 20)"><rect x="0" y="20" width="70" height="60" fill="#A79C8A" stroke="${INK}" stroke-width="3"/><path d="M-6 22 L35 -14 L76 22z" fill="#8E5BC0" stroke="${INK}" stroke-width="3"/></g>`;
+  return `<defs><linearGradient id="msky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs>
+    <rect width="1000" height="420" fill="url(#msky)"/>
+    <path d="M0 140 q160 -50 320 0 t340 -10 t340 10 V420 H0z" fill="${land[0]}"/>
+    <path d="M0 230 q200 -40 420 10 t580 -20 V420 H0z" fill="${land[1]}" opacity=".7"/>${deco}`;
+}
+function sceneMapSvg(sn){
+  const sc = SCENES[sn-1], first = LEVELS.findIndex(L => L.scene === sn);
+  const pts = NODE_POS.map(p => p.join(' ')).join(' L');
+  let nodes = '';
+  let nextI = -1;
+  for (let k=0;k<10;k++){ const i = first + k; if (levelOpen(i) && !S.save.progress[LEVELS[i].id]){ nextI = i; break; } }
+  NODE_POS.forEach(([x,y],k) => {
+    const i = first + k, L = LEVELS[i], p = S.save.progress[L.id], open = levelOpen(i), boss = !!L.boss, r = boss ? 34 : 27;
+    const fill = p ? '#FFD66B' : open ? '#fff' : '#D9D2C3';
+    const stars = p ? [0,1,2].map(q => q < p.stars ? '★' : '☆').join('') : '';
+    nodes += `<g class="node ${open?'':'lock'}" data-i="${i}">
+      ${i === nextI ? `<circle cx="${x}" cy="${y}" r="${r+8}" fill="#E8574A" opacity=".5" class="pulse"/>` : ''}
+      <circle cx="${x}" cy="${y+4}" r="${r}" fill="#000" opacity=".15"/>
+      <circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${INK}" stroke-width="4"/>
+      ${boss ? `<g transform="translate(${x-26} ${y-30}) scale(.5)">${catArt()}</g>` :
+        `<text x="${x}" y="${y+8}" text-anchor="middle" font-size="22" font-weight="bold" fill="${open?INK:'#9C9282'}">${open ? k+1 : '🔒'}</text>`}
+      ${stars ? `<text x="${x}" y="${y+r+22}" text-anchor="middle" font-size="19" fill="#E0A000" stroke="#fff" stroke-width="3" paint-order="stroke">${stars}</text>` : ''}
+      <text x="${x}" y="${y-r-8}" text-anchor="middle" font-size="14" font-weight="bold" fill="${INK}" stroke="#fff" stroke-width="4" paint-order="stroke">${L.name}</text>
+    </g>`;
+  });
+  const dogAt = NODE_POS[nextI === -1 ? 9 : nextI - first];
+  return `<svg viewBox="0 0 1000 420">${mapBg(sc.theme)}
+    <path d="M${pts}" fill="none" stroke="#EEDDB7" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M${pts}" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round"/>
+    ${nodes}
+    <g transform="translate(${dogAt[0]-62} ${dogAt[1]-34}) scale(.42)">${dogArt()}</g>
+    ${sn === 5 ? `<g transform="translate(${NODE_POS[0][0]-20} ${NODE_POS[0][1]+12}) scale(.32)">${birdArt()}</g>` : ''}
+    <g transform="translate(905 345)"><rect x="-70" y="-26" width="140" height="44" rx="10" fill="#B07A48" stroke="${INK}" stroke-width="3"/><text x="0" y="5" text-anchor="middle" font-size="18" font-weight="bold" fill="#fff">${sc.next} ➜</text></g>
+  </svg>`;
+}
+
+/* ---------- 筆記本、偵探榜 ---------- */
+function openNotebook(){
+  let h = '';
+  for (let s=1; s<=5; s++){
+    h += `<h3 style="text-align:left;margin:14px 0 4px">${SCENES[s-1].icon} 情境${s}「${SCENES[s-1].name}」</h3><div class="nb">`;
+    LEVELS.filter(L => L.scene === s).forEach(L => {
+      const p = S.save.progress[L.id];
+      h += p ? `<div class="nbs">${clueIcon(L.clue.icon, 44)}<b>${L.clue.name}</b>${L.clue.desc}</div>` : `<div class="nbs no">?</div>`;
+    });
+    h += '</div>';
+  }
+  openDlg(`<h2>📓 偵探筆記本</h2><p>已蒐集 ${Object.keys(S.save.progress).length} / 50 條線索</p>${h}<div class="row"><button class="btn main" id="nOk">關閉</button></div>`, true);
+  $('nOk').onclick = closeDlg;
+}
+async function openBoard(){
+  openDlg(`<h2>🏆 ${ACC.cls} 班偵探榜</h2><p>讀取中……</p>`);
+  try {
+    const r = await api({action:'rank', cls:ACC.cls, seat:ACC.seat, pw:ACC.pw});
+    if (!r.ok) throw new Error(r.msg);
+    const rows = r.list.map((s,i) => `<tr class="${s.seat == ACC.seat ? 'me' : ''}"><td>${['🥇','🥈','🥉'][i] || (i+1)}</td><td>${s.seat} 號 ${esc(s.name)}</td><td>${rankName(s.stars)}</td><td>⭐ ${s.stars}</td></tr>`).join('');
+    openDlg(`<h2>🏆 ${ACC.cls} 班偵探榜</h2><table class="rank">${rows || '<tr><td>還沒有人破案喔！</td></tr>'}</table><div class="row"><button class="btn main" id="dOk">關閉</button></div>`);
+    $('dOk').onclick = closeDlg;
+  } catch(e){ okDlg('🏆 偵探榜', '連不上網路，等一下再試試看。'); }
+}
+
+/* =========================================================
+   繪本
+   ========================================================= */
+function officeBg(night){
+  const wall = night ? '#4B4870' : '#F4D9A8', floor = night ? '#6B5A70' : '#D2A673';
+  const sky = night ? `<rect x="70" y="60" width="180" height="140" fill="#22264A"/><circle cx="200" cy="100" r="20" fill="#FFF3B0"/><circle cx="192" cy="94" r="18" fill="#22264A"/>
+      ${[[100,90],[130,150],[220,170],[90,180]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="2.5" fill="#FFF3B0"/>`).join('')}`
+    : `<rect x="70" y="60" width="180" height="140" fill="#BFE3F2"/><circle cx="200" cy="100" r="22" fill="#FFE07A"/><path d="M90 160 q20 -20 40 0 q20 -14 30 6 z" fill="#fff"/>`;
+  return `<rect width="800" height="450" fill="${wall}"/><rect y="330" width="800" height="120" fill="${floor}"/>
+    <path d="M0 330 H800" stroke="${INK}" stroke-width="4"/>
+    ${sky}<rect x="70" y="60" width="180" height="140" fill="none" stroke="${INK}" stroke-width="8"/><path d="M160 60 v140 M70 130 h180" stroke="${INK}" stroke-width="5"/>
+    <g transform="translate(300 40)"><rect width="230" height="56" rx="10" fill="#B07A48" stroke="${INK}" stroke-width="4"/><text x="115" y="38" text-anchor="middle" font-size="28" font-weight="bold" fill="#FFF3D6">🐾 汪汪偵探社</text></g>
+    <g transform="translate(610 120)"><rect width="140" height="210" fill="#C48D57" stroke="${INK}" stroke-width="4"/>
+      ${[30,95,160].map(y => `<path d="M0 ${y+40} h140" stroke="${INK}" stroke-width="4"/>
+        <rect x="14" y="${y}" width="16" height="40" fill="#E8574A"/><rect x="34" y="${y+6}" width="14" height="34" fill="#4C97FF"/><rect x="52" y="${y+2}" width="18" height="38" fill="#7DB35B"/><rect x="96" y="${y+8}" width="16" height="32" fill="#F5B935"/>`).join('')}
+    </g>`;
+}
+function sceneBg(theme, eve){
+  const sky = eve ? ['#F7B58A','#FCE3B8'] : {park:['#BFE3F2','#F2F8E6'], town:['#BFDDF2','#F6EEE0'], beach:['#AEE0F5','#FFF6DE'], forest:['#BFDDB5','#EAF3DC'], castle:['#C9C2E3','#F0ECF5']}[theme];
+  const land = {park:['#CDE6A5','#B5D88A'], town:['#E3DACB','#D2C7B2'], beach:['#F5E6B8','#EAD49A'], forest:['#A5C985','#8DB86C'], castle:['#CFC8BA','#BDB4A4']}[theme];
+  let deco = '';
+  if (theme === 'park') deco = [[40,190],[140,210],[600,190],[700,220],[760,160]].map(([x,y],i) => `<g transform="translate(${x} ${y}) scale(1.7)">${treeArt(i,i+2).replace(/translate\([^)]*\)/,'translate(0 0)')}</g>`).join('');
+  if (theme === 'town') deco = [[20,170],[120,150],[560,160],[660,140],[740,175]].map(([x,y],i) => `<g transform="translate(${x} ${y}) scale(1.8)">${houseArt(i,i+4).replace(/translate\([^)]*\)/,'translate(0 0)')}</g>`).join('');
+  if (theme === 'beach') deco = `<path d="M0 250 q200 -20 400 0 t400 0 V330 H0z" fill="#6FB8E0"/><path d="M60 270 q20 -8 40 0 M400 262 q20 -8 40 0 M680 275 q20 -8 40 0" stroke="#fff" stroke-width="3" fill="none"/>` +
+    [[620,250],[700,280]].map(([x,y],i) => `<g transform="translate(${x} ${y}) scale(1.7)">${umbrellaArt(i,i).replace(/translate\([^)]*\)/,'translate(0 0)')}</g>`).join('');
+  if (theme === 'forest') deco = [[10,150],[90,170],[170,140],[580,150],[660,170],[740,140]].map(([x,y],i) => `<g transform="translate(${x} ${y}) scale(2)">${pineArt(i,i+1).replace(/translate\([^)]*\)/,'translate(0 0)')}</g>`).join('');
+  if (theme === 'castle') deco = `<g transform="translate(470 60)"><rect x="0" y="60" width="260" height="200" fill="#A79C8A" stroke="${INK}" stroke-width="4"/>
+     <rect x="-30" y="20" width="70" height="240" fill="#B4A996" stroke="${INK}" stroke-width="4"/><rect x="220" y="20" width="70" height="240" fill="#B4A996" stroke="${INK}" stroke-width="4"/>
+     <path d="M-38 22 L5 -30 L48 22z M212 22 L255 -30 L298 22z" fill="#8E5BC0" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+     <path d="M100 260 v-70 q30 -36 60 0 v70z" fill="#5A3A22" stroke="${INK}" stroke-width="4"/></g>`;
+  return `<defs><linearGradient id="bsky${theme}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs>
+    <rect width="800" height="450" fill="url(#bsky${theme})"/><circle cx="680" cy="80" r="36" fill="${eve?'#FFD27A':'#FFE07A'}"/>
+    <path d="M90 90 q20 -24 46 -6 q22 -14 36 8 z M420 70 q16 -20 38 -4 q20 -12 30 6 z" fill="#fff" opacity=".9"/>
+    <path d="M0 260 q200 -60 400 0 t400 -10 V450 H0z" fill="${land[0]}"/>${deco}
+    <path d="M0 330 q260 -40 520 10 t280 -10 V450 H0z" fill="${land[1]}"/>`;
+}
+function magnifier(x,y,s=1,rot=-30){
+  return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><rect x="-4" y="16" width="8" height="30" rx="4" fill="#8B5E3C" stroke="${INK}" stroke-width="3"/>
+    <circle r="18" fill="#DFF3FF" fill-opacity=".75" stroke="${INK}" stroke-width="5"/><path d="M-9 -6 q4 -7 11 -8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></g>`;
+}
+const svgw = s => `<svg viewBox="0 0 800 450">${s}</svg>`;
+const put = (x,y,s,art) => `<g transform="translate(${x} ${y}) scale(${s})">${art}</g>`;
+const putF = (x,y,s,art) => `<g transform="translate(${x} ${y}) scale(${-s} ${s})">${art}</g>`;
+const BOOK_ART = {
+  office: () => svgw(`${officeBg(false)}
+    <g transform="translate(470 150)"><rect width="60" height="60" fill="#FFF3D6" stroke="${INK}" stroke-width="4"/>${starShape(30,30,20,9,'#F5C431','#9C6B00')}</g>
+    ${put(250,175,1.9,dogArt({happy:true}))}${magnifier(470,260,1.4,-20)}
+    <rect x="160" y="300" width="400" height="30" rx="6" fill="#9B6A43" stroke="${INK}" stroke-width="4"/>
+    <rect x="180" y="330" width="22" height="90" fill="#9B6A43" stroke="${INK}" stroke-width="4"/><rect x="518" y="330" width="22" height="90" fill="#9B6A43" stroke="${INK}" stroke-width="4"/>`),
+  night: () => svgw(`${officeBg(true)}
+    <g transform="translate(470 150)"><rect width="60" height="60" fill="#B9B4D6" stroke="${INK}" stroke-width="4" stroke-dasharray="6 5"/><text x="30" y="42" text-anchor="middle" font-size="34" fill="${INK}">?</text></g>
+    <ellipse cx="330" cy="385" rx="140" ry="28" fill="#D9473A" stroke="${INK}" stroke-width="4"/>
+    ${put(220,230,1.8,dogArt({sleep:true}))}
+    <text x="440" y="250" font-size="34" font-weight="bold" fill="#FFF3B0">Z</text><text x="470" y="215" font-size="26" font-weight="bold" fill="#FFF3B0">z</text><text x="492" y="190" font-size="20" font-weight="bold" fill="#FFF3B0">z</text>
+    ${putF(770,200,1.6,catArt({badge:true}))}`),
+  lost: () => svgw(`${sceneBg('park')}
+    ${[[200,400],[250,370],[300,350]].map(([x,y]) => `<g transform="translate(${x} ${y}) rotate(-60) scale(1.6)">${pawArt('#7A5A3A','.4')}</g>`).join('')}
+    ${put(300,200,1.9,dogArt())}
+    <text x="500" y="200" font-size="70" font-weight="bold" fill="#E8574A" stroke="#fff" stroke-width="6" paint-order="stroke">?</text>
+    <text x="560" y="150" font-size="50" font-weight="bold" fill="#4C97FF" stroke="#fff" stroke-width="5" paint-order="stroke">?</text>`),
+  clue: () => svgw(`${sceneBg('park')}
+    <g transform="translate(560 395) rotate(10) scale(3.2)">${pawArt('#6B4A2F','.8')}</g>
+    <g transform="translate(660 360) rotate(10) scale(2.6)">${pawArt('#6B4A2F','.55')}</g>
+    ${put(180,200,1.9,dogArt({happy:true}))}${magnifier(470,330,2.2,-40)}`),
+  help: () => svgw(`<rect width="800" height="450" fill="#FFF6DD"/>
+    ${[[60,60,'#4C97FF','移動 1 格'],[560,50,'#4C97FF','向右轉 ↻'],[80,330,'#FFBF00','當 🚩 被點擊'],[560,330,'#FFAB19','重複 3 次']].map(([x,y,c,t]) =>
+      `<g transform="translate(${x} ${y}) rotate(${x<400?-6:6})"><rect width="170" height="52" rx="9" fill="${c}" stroke="rgba(0,0,0,.25)" stroke-width="3"/><rect x="18" y="48" width="26" height="10" rx="4" fill="${c}"/><text x="85" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#fff">${t}</text></g>`).join('')}
+    ${put(270,110,2.3,dogArt({happy:true}))}
+    <text x="400" y="420" text-anchor="middle" font-size="30" font-weight="bold" fill="${INK}">偵探助手，就是你！</text>`),
+  end1: () => svgw(`${sceneBg('park')}${put(160,200,1.8,dogArt({happy:true}))}
+    <g transform="translate(440 150)"><rect width="250" height="190" rx="10" fill="#FFFDF8" stroke="${INK}" stroke-width="5"/><path d="M125 0 v190" stroke="${INK}" stroke-width="3"/>
+      ${['paw','hair','wetpaw','hanky','bell','map'].map((k,i) => clueIcon(k,64).replace('<svg', `<svg x="${(i%2)*125 + 30}" y="${Math.floor(i/3)*0 + Math.floor(i/2)*60 + 6}"`)).join('')}</g>`),
+  townTease: () => svgw(`${sceneBg('town', true)}${putF(560,90,1,catArt({badge:true}))}${put(90,200,1.9,dogArt())}${magnifier(330,290,1.3,-30)}`),
+  townEnd: () => svgw(`${sceneBg('town')}${put(160,190,1.8,dogArt({happy:true}))}${put(470,200,3,postmanArt())}
+    <g transform="translate(640 260) scale(2.2)">${itemArt('letter')}</g>`),
+  beachTease: () => svgw(`${sceneBg('beach', true)}<g transform="translate(470 200)"><path d="M0 40 q80 30 160 0 l-20 -30 h-120z" fill="#B07A48" stroke="${INK}" stroke-width="4"/><path d="M80 10 v-90" stroke="${INK}" stroke-width="4"/><path d="M84 -78 l60 50 h-60z" fill="#fff" stroke="${INK}" stroke-width="3"/></g>
+    ${putF(600,120,1,catArt({badge:true}))}${put(100,230,1.7,dogArt())}`),
+  beachEnd: () => svgw(`${sceneBg('beach')}${put(140,220,1.8,dogArt({happy:true}))}
+    ${[[480,330],[560,350],[640,320]].map(([x,y]) => `<g transform="translate(${x} ${y}) scale(2.2)">${itemArt('shell')}</g>`).join('')}<g transform="translate(560 240) scale(2)">${crabArt()}</g>`),
+  forestTease: () => svgw(`${sceneBg('forest', true)}${putF(620,180,1.3,catArt({badge:true}))}${put(90,220,1.8,dogArt())}${magnifier(340,310,1.3,-30)}`),
+  forestEnd: () => svgw(`${sceneBg('forest')}${put(140,220,1.8,dogArt({happy:true}))}${put(520,180,3.2,owlArt())}
+    ${[[430,360],[700,370]].map(([x,y]) => `<g transform="translate(${x} ${y}) scale(2)">${itemArt('acorn')}</g>`).join('')}`),
+  castleTease: () => svgw(`${sceneBg('castle', true)}${putF(640,30,.9,catArt({badge:true}))}${put(80,230,1.8,dogArt())}${put(340,250,1.1,birdArt())}`),
+  final1: () => svgw(`${sceneBg('castle')}${put(120,220,1.8,dogArt({happy:true, badge:true}))}${put(360,280,1,birdArt())}${putF(700,220,1.8,catArt({nomask:true}))}
+    <g transform="translate(560 380) rotate(-20) scale(2)"><path d="M6 24 q24 -12 48 0 l-2 14 q-22 -7 -44 0 z" fill="#8E5BC0" stroke="${INK}" stroke-width="2.5" transform="translate(-30 -30)"/></g>`),
+  final2: () => svgw(`${sceneBg('town', true)}${put(150,230,1.6,dogArt({happy:true, badge:true}))}${put(460,240,1.5,catArt({nomask:true}))}${put(330,140,.9,birdArt())}`),
+  final3: () => svgw(`${sceneBg('park')}<g transform="translate(480 90)"><rect x="0" y="80" width="260" height="190" fill="#F4C7A1" stroke="${INK}" stroke-width="4"/><path d="M-20 84 L130 -20 L280 84z" fill="#D9534F" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+      <rect x="100" y="160" width="60" height="110" rx="4" fill="#9B6A43" stroke="${INK}" stroke-width="4"/><rect x="20" y="120" width="56" height="50" fill="#FFF3B0" stroke="${INK}" stroke-width="4"/><text x="130" y="60" text-anchor="middle" font-size="22" font-weight="bold" fill="#fff">汪汪的家</text></g>
+    ${put(345,215,3.1,kidArt())}${put(60,235,1.7,dogArt({happy:true, badge:true}))}${putF(690,330,.9,catArt({nomask:true}))}${put(250,150,.8,birdArt())}
+    <text x="400" y="60" text-anchor="middle" font-size="34" font-weight="bold" fill="#E8574A" stroke="#fff" stroke-width="6" paint-order="stroke">全劇終</text>`),
+};
+const INTRO_PAGES = [
+  {art:'office', text:'這裡是「汪汪偵探社」。汪汪是全鎮最聰明的小狗偵探，再難的案子都難不倒牠！牆上掛著的，是牠最寶貝的<b>偵探徽章</b>。'},
+  {art:'night',  text:'有一天晚上，一隻戴著紫色面具的黑貓<b>「喵影」</b>偷偷溜進偵探社……叼走了汪汪的偵探徽章！'},
+  {art:'lost',   text:'「站住！」汪汪醒來追了出去，跑過一條又一條街。等牠停下來，四周全是沒看過的地方——<b>汪汪迷路了！</b>'},
+  {art:'clue',   text:'不過別擔心，偵探最會的就是<b>找線索</b>！只要一案一案破解，蒐集線索，就能找到喵影，也能找到回家的路。'},
+  {art:'help',   text:'請你當汪汪的<b>偵探助手</b>，用<b>程式積木</b>指揮汪汪辦案吧！第一站：<b>公園</b>。'},
+];
+const END_PAGES = {
+  1:[{art:'end1', text:'汪汪在公園破了 10 個案子，蒐集到腳印、貓毛、手帕、鈴鐺……好多好多線索！'},
+     {art:'townTease', text:'所有線索都指向公園外面的<b>小鎮</b>。屋頂上，喵影叼著徽章對汪汪眨眨眼。「喵影，你跑不掉的！」<br>下一站：<b>小鎮</b>——要學會用<b>「重複」</b>！'}],
+  2:[{art:'townEnd', text:'郵差先生幫了大忙！汪汪在小鎮學會了「重複」，一下子就跑完了長長的路。'},
+     {art:'beachTease', text:'面具帶子上寫著「海邊」。遠遠的海面上，喵影坐著小船揮揮手。<br>下一站：<b>海邊</b>——要學會<b>「事件」和「如果」</b>！'}],
+  3:[{art:'beachEnd', text:'汪汪學會了自己判斷：前面有障礙就轉彎、看到貝殼就撿起來。螃蟹也變成了好朋友！'},
+     {art:'forestTease', text:'喵影的小船划進了河口，那裡是一大片<b>森林</b>。天就快黑了……<br>下一站：<b>森林</b>——要學會用<b>「變數」</b>數東西！'}],
+  4:[{art:'forestEnd', text:'在貓頭鷹的幫忙下，汪汪數清楚了骨頭、藍莓和松果，順利走出森林。'},
+     {art:'castleTease', text:'森林外面是一座古老的<b>城堡</b>，喵影就在塔頂！這時，一隻小麻雀飛了過來：「我叫<b>啾啾</b>，我來幫你！」<br>下一站：<b>城堡</b>——兩個夥伴要用<b>「廣播」</b>合作！'}],
+  5:[{art:'final1', text:'汪汪終於拿回了偵探徽章！喵影拿下面具：「其實……我是住你家隔壁的貓<b>小黑</b>。我好無聊，只是想找你一起玩嘛！」'},
+     {art:'final2', text:'汪汪笑了：「下次想玩，直接來敲門就好啦！」汪汪、小黑和啾啾，一起踏上回家的路。'},
+     {art:'final3', text:'家門口，主人正焦急地等著。「汪汪，你回來了！」<br>恭喜你，偵探助手！你用程式積木陪汪汪破了 <b>50 個案子</b>，你就是真正的<b>名偵探</b>！'}],
+};
+function storyPages(){
+  let p = INTRO_PAGES.slice();
+  for (let s=1; s<=5; s++) if (S.save.seen['end'+s]) p = p.concat(END_PAGES[s]);
+  return p;
+}
+let book = null;
+function openBook(pages, done){ book = {pages, i:0, done}; renderBook(); show('book'); }
+function renderBook(){
+  const p = book.pages[book.i];
+  $('bookPage').innerHTML = `<div class="bookpage">${BOOK_ART[p.art]()}<div class="booktext">${p.text}</div></div>`;
+  $('bDots').innerHTML = book.pages.map((_,k) => `<i class="${k===book.i?'on':''}"></i>`).join('');
+  $('bPrev').style.visibility = book.i ? 'visible' : 'hidden';
+  $('bNext').textContent = book.i === book.pages.length - 1 ? '繼續 ▶' : '下一頁 ▶';
+}
+$('bPrev').onclick = () => { if (book.i > 0){ book.i--; renderBook(); } };
+$('bNext').onclick = () => { if (book.i < book.pages.length - 1){ book.i++; renderBook(); } else book.done(); };
+$('bSkip').onclick = () => book.done();
+
+/* =========================================================
+   登入
+   ========================================================= */
+function enterGame(){
+  S.save = loadSave();
+  // 登入帳號時以雲端進度為準（老師重設才有效），再補上還沒上傳成功的紀錄
+  if (ACC && ACC.cloud){
+    const prog = {};
+    for (const [lv, p] of Object.entries(ACC.prog || {})) prog[lv] = {stars:p.stars, blocks:p.blocks};
+    for (const r of S.save.pending){ const o = prog[r.lv]; if (!o || r.stars > o.stars || (r.stars === o.stars && r.blocks < o.blocks)) prog[r.lv] = {stars:r.stars, blocks:r.blocks}; }
+    S.save.progress = prog;
+    S.save.seen = {intro: S.save.seen.intro};
+  }
+  for (let s=1; s<5; s++) if (S.save.progress[s + '-10']) S.save.seen['end'+s] = true;
+  writeSave(); syncSpeed(); syncSound();
+  mapScene = 1;
+  for (let s=5; s>=1; s--) if (!sceneLock(s)){ mapScene = s; break; }
+  updateWho();
+  if (!S.save.seen.intro){ S.save.seen.intro = true; writeSave(); openBook(INTRO_PAGES, openMap); }
+  else openMap();
+  if (S.save.pending.length) flushCloud();
+}
+function updateWho(){
+  $('tWho').textContent = ACC ? (ACC.guest ? '目前：訪客' : `目前：${ACC.cls} 班 ${ACC.seat} 號 ${ACC.name || ''}`) : '';
+}
+function openLogin(){
+  $('lCls').innerHTML = CLASSES.map(c => `<option>${c}</option>`).join('');
+  try { const last = JSON.parse(localStorage.getItem(SAVE_PREFIX + 'last') || 'null'); if (last){ $('lCls').value = last.cls; $('lSeat').value = last.seat; } } catch(e) {}
+  $('lPw').value = ''; $('lErr').textContent = '';
+  setLoginMode(false);
+  show('login'); setTimeout(() => ($('lSeat').value ? $('lPw') : $('lSeat')).focus(), 50);
+}
+let LSET = null; // 第一次登入、設定密碼中：{cls, seat, name}
+function setLoginMode(set, info){
+  LSET = set ? info : null;
+  $('lSet').style.display = set ? '' : 'none';
+  $('lPwRow').style.display = set ? 'none' : '';
+  $('lCls').disabled = $('lSeat').disabled = !!set;
+  $('lGo').textContent = set ? '設定並登入' : '登入';
+  if (set){
+    $('lNameRow').style.display = info.name ? 'none' : '';
+    $('lSetMsg').innerHTML = `👋 ${info.name ? `<b>${esc(info.name)}</b>，` : ''}這是你第一次登入！請自己想一組 <b>4 位數字</b>當密碼，要記住喔！${info.name ? '' : '<br>也請輸入你的名字。'}`;
+    $('lName').value = ''; $('lNew1').value = ''; $('lNew2').value = '';
+    setTimeout(() => (info.name ? $('lNew1') : $('lName')).focus(), 50);
+  }
+}
+async function doSetPw(){
+  const name = $('lName').value.trim(), p1 = $('lNew1').value.trim(), p2 = $('lNew2').value.trim();
+  if (!LSET.name && !name){ $('lErr').textContent = '請輸入你的名字'; return; }
+  if (!/^\d{4}$/.test(p1)){ $('lErr').textContent = '密碼要是 4 個數字'; return; }
+  if (p1 !== p2){ $('lErr').textContent = '兩次輸入的密碼不一樣，再打一次'; return; }
+  $('lErr').textContent = '設定中……'; $('lGo').disabled = true;
+  try {
+    const r = await api({action:'setpw', cls:LSET.cls, seat:LSET.seat, name, pw:p1});
+    if (!r.ok){ $('lErr').textContent = r.msg || '設定失敗'; return; }
+    const {cls, seat} = LSET; setLoginMode(false);
+    loginOk(cls, seat, p1, r);
+  } catch(e){ $('lErr').textContent = '連不上網路，請檢查網路後再試一次。'; }
+  finally { $('lGo').disabled = false; }
+}
+function loginOk(cls, seat, pw, r){
+  ACC = {cls, seat, pw, name:r.name, open:r.open || 1, prog:r.prog || {}, cloud:true};
+  try { localStorage.setItem(SAVE_PREFIX + 'last', JSON.stringify({cls, seat})); } catch(e) {}
+  enterGame();
+}
+async function doLogin(){
+  if (LSET) return doSetPw();
+  const cls = $('lCls').value, seat = parseInt($('lSeat').value, 10), pw = $('lPw').value.trim();
+  if (!seat || seat < 1 || seat > 40){ $('lErr').textContent = '請輸入正確的座號'; return; }
+  $('lErr').textContent = '登入中……'; $('lGo').disabled = true;
+  try {
+    const r = await api({action:'login', cls, seat, pw});
+    if (r.need === 'setpw'){ $('lErr').textContent = ''; setLoginMode(true, {cls, seat, name:r.name || ''}); return; }
+    if (!r.ok){ $('lErr').textContent = r.msg || '登入失敗'; return; }
+    loginOk(cls, seat, pw, r);
+  } catch(e){ $('lErr').textContent = '連不上網路，請檢查網路後再試一次。'; }
+  finally { $('lGo').disabled = false; }
+}
+$('lGo').onclick = doLogin;
+$('lPw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+$('lSeat').addEventListener('keydown', e => { if (e.key === 'Enter') $('lPw').focus(); });
+$('lName').addEventListener('keydown', e => { if (e.key === 'Enter') $('lNew1').focus(); });
+$('lNew1').addEventListener('keydown', e => { if (e.key === 'Enter') $('lNew2').focus(); });
+$('lNew2').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+$('lBack').onclick = () => { if (LSET){ setLoginMode(false); $('lErr').textContent = ''; } else show('title'); };
+$('lGuest').onclick = () => { ACC = {guest:true}; enterGame(); };
+
+/* =========================================================
+   教師模式
+   ========================================================= */
+let TPW = '', TDATA = null;
+async function teacherLogin(){
+  const pw = $('tPw').value.trim(); if (!pw) return;
+  $('tErr').textContent = '登入中……'; $('tGo').disabled = true;
+  try {
+    const r = await api({action:'tlogin', tpw:pw});
+    if (!r.ok){ $('tErr').textContent = r.msg || '密碼錯誤'; return; }
+    TPW = pw; $('tErr').textContent = '';
+    $('tCls').innerHTML = CLASSES.map(c => `<option>${c}</option>`).join('');
+    $('tOpen').innerHTML = SCENES.map(s => `<option value="${s.no}">情境${s.no}「${s.name}」</option>`).join('');
+    show('teacher'); loadClass();
+  } catch(e){ $('tErr').textContent = '連不上網路，請再試一次。'; }
+  finally { $('tGo').disabled = false; }
+}
+async function loadClass(){
+  const cls = $('tCls').value;
+  $('tTable').innerHTML = '<p>讀取中……</p>'; $('tMsg').textContent = '';
+  try {
+    const r = await api({action:'tclass', tpw:TPW, cls});
+    if (!r.ok) throw new Error(r.msg);
+    TDATA = {cls, ...r};
+    $('tOpen').value = r.open || 1;
+    renderClass();
+  } catch(e){ $('tTable').innerHTML = `<p style="color:var(--coral-d)">讀取失敗：${esc(e.message || '連不上網路')}</p>`; }
+}
+function studentSummary(st){
+  const prog = st.prog || {};
+  const stars = Object.values(prog).reduce((a,b) => a + b, 0);
+  const done = LEVELS.filter(L => prog[L.id]).length;
+  const next = LEVELS.find(L => !prog[L.id]);
+  return {stars, done, cur: next ? next.id : '全破'};
+}
+function renderClass(){
+  const head = `<tr><th>座號</th><th>姓名</th><th>目前案件</th><th>破案數</th><th>總星數</th><th>等級</th><th>最後遊玩</th><th>各案件星數（情境一 → 五）</th></tr>`;
+  const rows = TDATA.students.map(st => {
+    const sm = studentSummary(st), prog = st.prog || {};
+    const cells = [1,2,3,4,5].map(s => `<span class="grp">${LEVELS.filter(L => L.scene === s).map(L => `<i class="s${prog[L.id]||0}" title="${L.id} ${L.name}：${prog[L.id]||0} 星"></i>`).join('')}</span>`).join('');
+    return `<tr><td>${st.seat}</td><td class="name" data-seat="${st.seat}">${esc(st.name)}</td><td>${sm.cur}</td><td>${sm.done} / 50</td><td>⭐ ${sm.stars}</td><td>${rankName(sm.stars)}</td><td>${esc(st.last || '')}</td><td><div class="cells">${cells}</div></td></tr>`;
+  }).join('');
+  $('tTable').innerHTML = TDATA.students.length ? `<table class="ttable">${head}${rows}</table>` : '<p>這個班還沒有學生名單。請在試算表「學生名單」加入學生。</p>';
+  $('tTable').querySelectorAll('td.name').forEach(td => td.onclick = () => studentDlg(+td.dataset.seat));
+}
+function studentDlg(seat){
+  const st = TDATA.students.find(s => s.seat == seat), sm = studentSummary(st);
+  openDlg(`<h2>${TDATA.cls} 班 ${seat} 號 ${esc(st.name)}</h2>
+    <p>破案 ${sm.done} / 50　⭐ ${sm.stars}　目前案件 ${sm.cur}</p>
+    <p>登入密碼：<b id="sPw" style="font-size:22px;letter-spacing:3px">${esc(st.pw || '（還沒設定）')}</b></p>
+    <div class="row"><button class="btn" id="sNewPw">🔑 清除密碼（讓學生重新設定）</button><button class="btn" id="sDel">🗑️ 刪除這位學生</button></div>
+    <h3 style="margin:18px 0 6px">♻️ 重設進度</h3>
+    <div class="row" style="margin-top:6px">${SCENES.map(s => `<button class="btn small" data-sc="${s.no}">情境${s.no}</button>`).join('')}<button class="btn small main" data-sc="0">全部重設</button></div>
+    <p style="font-size:14px;color:var(--ink2)">重設後無法復原，學生下次登入就會看到新的進度，請小心使用。</p>
+    <div class="row"><button class="btn" id="sClose">關閉</button></div>`);
+  $('sClose').onclick = closeDlg;
+  $('sNewPw').onclick = async () => {
+    if (!confirm(`確定要清除 ${seat} 號的密碼嗎？\n學生下次登入時會自己設定新密碼。`)) return;
+    try { const r = await api({action:'tpw', tpw:TPW, cls:TDATA.cls, seat}); if (!r.ok) throw new Error(r.msg); st.pw = ''; $('sPw').textContent = '（還沒設定）'; }
+    catch(e){ alert('失敗：' + (e.message || '連不上網路')); }
+  };
+  $('sDel').onclick = async () => {
+    if (!confirm(`確定要刪除 ${seat} 號 ${st.name} 嗎？\n名單和所有進度都會刪除，無法復原。\n（例如學生登入時打錯座號，可以用這個刪掉）`)) return;
+    try { const r = await api({action:'tdel', tpw:TPW, cls:TDATA.cls, seat}); if (!r.ok) throw new Error(r.msg); closeDlg(); await loadClass(); $('tMsg').textContent = `✅ 已刪除 ${seat} 號`; }
+    catch(e){ alert('失敗：' + (e.message || '連不上網路')); }
+  };
+  $('dlg').querySelectorAll('[data-sc]').forEach(b => b.onclick = async () => {
+    const sc = +b.dataset.sc, what = sc ? `情境${sc}「${SCENES[sc-1].name}」` : '全部';
+    if (!confirm(`確定要把 ${seat} 號 ${st.name} 的「${what}」進度重設嗎？\n這個動作無法復原。`)) return;
+    try {
+      const r = await api({action:'treset', tpw:TPW, cls:TDATA.cls, seat, scene:sc});
+      if (!r.ok) throw new Error(r.msg);
+      closeDlg(); await loadClass(); $('tMsg').textContent = `✅ 已重設 ${seat} 號的${what}進度`;
+    } catch(e){ alert('失敗：' + (e.message || '連不上網路')); }
+  });
+}
+$('tOpen').onchange = async () => {
+  const open = +$('tOpen').value;
+  try {
+    const r = await api({action:'topen', tpw:TPW, cls:TDATA.cls, open});
+    if (!r.ok) throw new Error(r.msg);
+    $('tMsg').textContent = `✅ ${TDATA.cls} 班已開放到情境${open}「${SCENES[open-1].name}」`;
+  } catch(e){ $('tMsg').textContent = '⚠️ 設定失敗，請再試一次'; }
+};
+function csvOf(datas){
+  const head = ['班級','座號','姓名','破案數','總星數','等級','最後遊玩', ...LEVELS.map(L => L.id)];
+  const rows = [head];
+  for (const d of datas) for (const st of d.students){
+    const sm = studentSummary(st);
+    rows.push([d.cls, st.seat, st.name, sm.done, sm.stars, rankName(sm.stars).replace(/^\S+\s/, ''), st.last || '', ...LEVELS.map(L => (st.prog||{})[L.id] || 0)]);
+  }
+  return '﻿' + rows.map(r => r.map(v => { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }).join(',')).join('\r\n');
+}
+function download(name, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type:'text/csv;charset=utf-8'}));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+const today = () => { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; };
+$('tExpCls').onclick = () => { if (TDATA) download(`汪汪偵探社成績_${TDATA.cls}_${today()}.csv`, csvOf([TDATA])); };
+$('tExpAll').onclick = async () => {
+  $('tMsg').textContent = '匯出中……';
+  try {
+    const all = [];
+    for (const cls of CLASSES){ const r = await api({action:'tclass', tpw:TPW, cls}); if (r.ok) all.push({cls, ...r}); }
+    download(`汪汪偵探社成績_全部_${today()}.csv`, csvOf(all)); $('tMsg').textContent = '✅ 已匯出全部班級';
+  } catch(e){ $('tMsg').textContent = '⚠️ 匯出失敗，請再試一次'; }
+};
+$('tCls').onchange = loadClass;
+$('tReload').onclick = loadClass;
+$('tOut').onclick = () => { TPW = ''; TDATA = null; show('title'); };
+$('tGo').onclick = teacherLogin;
+$('tPw').addEventListener('keydown', e => { if (e.key === 'Enter') teacherLogin(); });
+$('tBack').onclick = () => show('title');
+
+/* =========================================================
+   標題與按鈕
+   ========================================================= */
+$('titleArt').innerHTML = `<svg viewBox="0 0 760 330">
+  <ellipse cx="380" cy="300" rx="330" ry="26" fill="#000" opacity=".08"/>
+  <g transform="translate(120 20)"><rect width="520" height="110" rx="20" fill="#B07A48" stroke="${INK}" stroke-width="6"/>
+    <rect x="12" y="12" width="496" height="86" rx="14" fill="none" stroke="#D9A66E" stroke-width="3" stroke-dasharray="10 8"/>
+    <text x="260" y="76" text-anchor="middle" font-size="58" font-weight="900" fill="#FFF3D6" stroke="${INK}" stroke-width="4" paint-order="stroke" font-family="Microsoft JhengHei,sans-serif">汪汪偵探社</text></g>
+  <g transform="translate(130 125) scale(1.75)">${dogArt({happy:true})}</g>
+  ${magnifier(330,250,1.3,-25)}
+  <g transform="translate(630 135) scale(-1.5 1.5)">${catArt({badge:true})}</g>
+  <text x="380" y="315" text-anchor="middle" font-size="20" fill="${INK}" font-weight="bold">用程式積木，幫汪汪找到回家的路！</text>
+</svg>`;
+$('tStart').onclick = () => {
+  if (ACC){ enterGame(); return; }
+  if (SCRIPT_URL) openLogin(); else { ACC = {guest:true}; enterGame(); }
+};
+$('tStory').onclick = () => { if (!S.save){ ACC = ACC || {guest:true}; S.save = loadSave(); } openBook(storyPages(), () => show('title')); };
+$('tNote').onclick = () => { if (!S.save){ ACC = ACC || {guest:true}; S.save = loadSave(); } openNotebook(); };
+$('tTeacher').onclick = () => {
+  if (!SCRIPT_URL){ okDlg('👩‍🏫 教師登入', '還沒有設定雲端（SCRIPT_URL），請先照「設定說明」建立試算表。'); return; }
+  $('tPw').value = ''; $('tErr').textContent = ''; show('tlogin'); setTimeout(() => $('tPw').focus(), 50);
+};
+$('mNote').onclick = openNotebook;
+$('mBoard').onclick = openBoard;
+$('mStory').onclick = () => openBook(storyPages(), openMap);
+$('mHome').onclick = () => { updateWho(); show('title'); };
+$('gMap').onclick = () => { stopRun(); openMap(); };
+$('gHint').onclick = showHint;
+$('runBtn').onclick = run;
+$('stopBtn').onclick = stopRun;
+$('rstBtn').onclick = () => { if (!S.running) resetStage(0); else stopRun(); };
+$('gReset').onclick = () => {
+  if (S.running) return;
+  openDlg(`<h2>↺ 重新開始</h2><p>要把程式恢復成這一案一開始的樣子嗎？<br>（現在的積木會被清掉）</p><div class="row"><button class="btn" id="rNo">取消</button><button class="btn main" id="rYes">恢復</button></div>`);
+  $('rNo').onclick = closeDlg;
+  $('rYes').onclick = () => { closeDlg(); S.sc = initialScripts(curL()); S.cur = 'dog'; renderTabs(); renderWS(); scriptChanged(); resetStage(0); };
+};
+function syncSpeed(){ $('speed').querySelectorAll('button').forEach(b => b.classList.toggle('on', S.save && b.dataset.s === S.save.speed)); }
+$('speed').querySelectorAll('button').forEach(b => b.onclick = () => { S.save.speed = b.dataset.s; writeSave(); syncSpeed(); });
+function syncSound(){ $('gSound').textContent = S.save && !S.save.sound ? '🔇' : '🔊'; }
+$('gSound').onclick = () => { S.save.sound = !S.save.sound; writeSave(); syncSound(); };
+$('keypad').querySelectorAll('button').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); pressKey(b.dataset.k); }));
+const KEYMAP = {ArrowRight:'right', ArrowLeft:'left', ArrowUp:'up', ArrowDown:'down', ' ':'space'};
+document.addEventListener('keydown', e => {
+  if (!S.running || !curL().keys) return;
+  if (/INPUT|SELECT/.test(document.activeElement.tagName)) return;
+  const k = KEYMAP[e.key]; if (!k) return;
+  e.preventDefault(); if (!e.repeat) pressKey(k);
+});
+window.addEventListener('pagehide', () => {
+  if (ACC && ACC.cloud && S.save && S.save.pending.length){
+    try { navigator.sendBeacon(SCRIPT_URL, new Blob([JSON.stringify({action:'save', cls:ACC.cls, seat:ACC.seat, pw:ACC.pw, recs:S.save.pending})], {type:'text/plain'})); } catch(e) {}
+  }
+});
+updateWho();
+</script>
+</body>
+</html>
